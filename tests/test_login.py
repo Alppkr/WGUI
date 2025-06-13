@@ -4,6 +4,8 @@ import pytest
 def test_login_success(client):
     resp = client.post('/login', data={'username': 'admin', 'password': 'admin'}, follow_redirects=True)
     assert b'Welcome!' in resp.data
+    with client.session_transaction() as sess:
+        assert sess.get('user_id') == 1
 
 
 def test_login_failure(client):
@@ -69,3 +71,35 @@ def test_session_timeout_one_hour(client):
     expire_dt = datetime.strptime(exp, '%a, %d %b %Y %H:%M:%S GMT').replace(tzinfo=timezone.utc)
     delta = expire_dt - datetime.now(timezone.utc)
     assert timedelta(minutes=59) <= delta <= timedelta(hours=1, minutes=1)
+
+
+def test_account_requires_login(client):
+    resp = client.get('/account', follow_redirects=True)
+    assert b'Login' in resp.data
+
+
+def test_update_account(client, login):
+    login()
+    from wgui.models import User
+    from wgui.extensions import db
+    with client.application.app_context():
+        orig_user = db.session.get(User, 1)
+        old_hash = orig_user.hashed_password
+    resp = client.post(
+        '/account',
+        data={
+            'email': 'new@example.com',
+            'password': 'newpass',
+            'confirm_password': 'newpass',
+        },
+        follow_redirects=True,
+    )
+    assert b'Account updated' in resp.data
+    with client.application.app_context():
+        user = db.session.get(User, 1)
+        assert user.email == 'new@example.com'
+        assert user.hashed_password != old_hash
+    # logout and login with new password
+    client.get('/logout')
+    resp = login(password='newpass')
+    assert b'Welcome!' in resp.data

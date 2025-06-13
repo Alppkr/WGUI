@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from ..models import User
-from .forms import LoginForm
-from .models import LoginData
+from ..extensions import db
+from .forms import LoginForm, UpdateAccountForm
+from .models import LoginData, UpdateAccountData
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -25,6 +26,7 @@ def login():
             session.permanent = True
             session['logged_in'] = True
             session['is_admin'] = user.is_admin
+            session['user_id'] = user.id
             flash('Logged in successfully.', 'success')
             return redirect(url_for('auth.index'))
         flash('Invalid credentials', 'danger')
@@ -35,5 +37,29 @@ def login():
 def logout():
     session.pop('logged_in', None)
     session.pop('is_admin', None)
+    session.pop('user_id', None)
     flash('Logged out', 'info')
     return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/account', methods=['GET', 'POST'])
+def account():
+    if not session.get('logged_in'):
+        return redirect(url_for('auth.login'))
+    form = UpdateAccountForm()
+    user = User.query.get_or_404(session.get('user_id'))
+    if request.method == 'GET':
+        form.email.data = user.email
+    if form.validate_on_submit():
+        data = UpdateAccountData(
+            email=form.email.data or None,
+            password=form.password.data or None,
+        )
+        if data.email:
+            user.email = data.email
+        if data.password:
+            user.hashed_password = generate_password_hash(data.password)
+        db.session.commit()
+        flash('Account updated', 'success')
+        return redirect(url_for('auth.account'))
+    return render_template('account.html', form=form)
