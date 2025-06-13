@@ -17,15 +17,18 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table(
-        'user',
-        sa.Column('id', sa.Integer(), primary_key=True),
-        sa.Column('username', sa.String(length=80), nullable=False, unique=True),
-        sa.Column('email', sa.String(length=120), nullable=False, unique=True),
-        sa.Column('hashed_password', sa.String(length=128), nullable=False),
-        sa.Column('is_admin', sa.Boolean(), nullable=False, server_default=sa.text('0')),
-        sa.Column('first_login', sa.Boolean(), nullable=False, server_default=sa.text('1')),
-    )
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    if not insp.has_table('user'):
+        op.create_table(
+            'user',
+            sa.Column('id', sa.Integer(), primary_key=True),
+            sa.Column('username', sa.String(length=80), nullable=False, unique=True),
+            sa.Column('email', sa.String(length=120), nullable=False, unique=True),
+            sa.Column('hashed_password', sa.String(length=128), nullable=False),
+            sa.Column('is_admin', sa.Boolean(), nullable=False, server_default=sa.text('0')),
+            sa.Column('first_login', sa.Boolean(), nullable=False, server_default=sa.text('1')),
+        )
 
 
 def downgrade():

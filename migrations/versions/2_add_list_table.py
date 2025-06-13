@@ -16,11 +16,14 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table(
-        'list_model',
-        sa.Column('id', sa.Integer(), primary_key=True),
-        sa.Column('name', sa.String(length=50), nullable=False, unique=True),
-    )
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    if not insp.has_table('list_model'):
+        op.create_table(
+            'list_model',
+            sa.Column('id', sa.Integer(), primary_key=True),
+            sa.Column('name', sa.String(length=50), nullable=False, unique=True),
+        )
 
 
 def downgrade():

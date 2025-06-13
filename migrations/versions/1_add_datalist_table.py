@@ -16,14 +16,17 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table(
-        'data_list',
-        sa.Column('id', sa.Integer(), primary_key=True),
-        sa.Column('category', sa.String(length=20), nullable=False),
-        sa.Column('data', sa.String(length=255), nullable=False),
-        sa.Column('description', sa.String(length=255)),
-        sa.Column('date', sa.Date(), nullable=False),
-    )
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    if not insp.has_table('data_list'):
+        op.create_table(
+            'data_list',
+            sa.Column('id', sa.Integer(), primary_key=True),
+            sa.Column('category', sa.String(length=20), nullable=False),
+            sa.Column('data', sa.String(length=255), nullable=False),
+            sa.Column('description', sa.String(length=255)),
+            sa.Column('date', sa.Date(), nullable=False),
+        )
 
 
 def downgrade():

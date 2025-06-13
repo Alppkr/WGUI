@@ -14,8 +14,16 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('list_model', sa.Column('type', sa.String(length=20), nullable=False, server_default='Ip'))
-    op.alter_column('list_model', 'type', server_default=None)
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    columns = [c['name'] for c in insp.get_columns('list_model')]
+    if 'type' not in columns:
+        op.add_column(
+            'list_model',
+            sa.Column('type', sa.String(length=20), nullable=False, server_default='Ip'),
+        )
+        if bind.dialect.name != 'sqlite':
+            op.alter_column('list_model', 'type', server_default=None)
 
 
 def downgrade():
