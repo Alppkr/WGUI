@@ -5,8 +5,14 @@ from wgui import create_app
 @pytest.fixture
 def client():
     app = create_app()
-    app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
+    app.config.update(
+        TESTING=True,
+        WTF_CSRF_ENABLED=False,
+        SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
+    )
+    from wgui.extensions import db
+    with app.app_context():
+        db.create_all()
     with app.test_client() as client:
         yield client
 

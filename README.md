@@ -6,6 +6,7 @@ Simple Flask login page with default admin credentials.
 
 ```bash
 pip install -r requirements.txt
+flask --app wgui db upgrade
 ```
 
 ## Run
