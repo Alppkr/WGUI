@@ -50,3 +50,16 @@ def test_add_list(client, login):
     )
     assert b'List created' in resp.data
     assert b'My List' in resp.data
+
+
+def test_lists_grouped_by_type(client, login):
+    login()
+    client.post('/lists/add', data={'name': 'IP Test', 'list_type': 'Ip'}, follow_redirects=True)
+    client.post('/lists/add', data={'name': 'Range Test', 'list_type': 'Ip Range'}, follow_redirects=True)
+    resp = client.get('/', follow_redirects=True)
+    ip_pos = resp.data.index(b'Ip')
+    ip_list_pos = resp.data.index(b'IP Test')
+    ip_range_pos = resp.data.index(b'Ip Range')
+    range_list_pos = resp.data.index(b'Range Test')
+    assert ip_pos < ip_list_pos
+    assert ip_range_pos < range_list_pos

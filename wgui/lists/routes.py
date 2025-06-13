@@ -9,7 +9,10 @@ lists_bp = Blueprint('lists', __name__, url_prefix='/lists')
 
 @lists_bp.app_context_processor
 def inject_lists():
-    return {'side_lists': ListModel.query.all()}
+    lists_by_type = {'Ip': [], 'Ip Range': [], 'String': []}
+    for lst in ListModel.query.all():
+        lists_by_type.setdefault(lst.type, []).append(lst)
+    return {'lists_by_type': lists_by_type}
 
 
 @lists_bp.before_request
