@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from ..models import DataList, ListModel
 from ..extensions import db
+from flask_jwt_extended import verify_jwt_in_request
 from .forms import AddItemForm, DeleteForm, AddListForm
 from .models import AddItemData, AddListData
 
@@ -17,7 +18,9 @@ def inject_lists():
 
 @lists_bp.before_request
 def require_login():
-    if not session.get('logged_in'):
+    try:
+        verify_jwt_in_request()
+    except Exception:
         return redirect(url_for('auth.login'))
 
 

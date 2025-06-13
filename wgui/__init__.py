@@ -2,7 +2,7 @@ from flask import Flask
 from .auth.routes import auth_bp
 from .admin import admin_bp
 from .lists import lists_bp
-from .extensions import db, migrate
+from .extensions import db, migrate, jwt
 from .error_handlers import register_error_handlers
 from flask_migrate import upgrade
 from .models import User, ListModel
@@ -19,9 +19,12 @@ def create_app(config_overrides=None):
     app.config.setdefault('SESSION_COOKIE_SECURE', True)
     app.config.setdefault('SESSION_COOKIE_HTTPONLY', True)
     app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
+    if app.config.get('TESTING'):
+        app.config['JWT_COOKIE_SECURE'] = False
 
     db.init_app(app)
     migrate.init_app(app, db)
+    jwt.init_app(app)
 
     with app.app_context():
         if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///:memory:'):

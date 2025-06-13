@@ -10,8 +10,8 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-3">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ url_for('auth.index') }}">WGUI</a>
-        {% if session.get('logged_in') %}
-        {% if session.get('is_admin') %}
+        {% if current_user %}
+        {% if current_claims.get('is_admin') %}
         <a class="btn btn-outline-primary me-0" href="{{ url_for('users.list_users') }}">Users</a>
         {% endif %}
         <div class="dropdown ms-0">
@@ -33,7 +33,7 @@
 </nav>
 <div class="container-fluid">
     <div class="row">
-        {% if session.get('logged_in') %}
+        {% if current_user %}
         <nav class="col-md-2 d-none d-md-block bg-white border-end sidebar py-3">
             <ul class="nav flex-column">
                 {% for type in ['Ip', 'Ip Range', 'String'] %}

@@ -3,9 +3,8 @@ import pytest
 
 def test_login_success(client):
     resp = client.post('/login', data={'username': 'admin', 'password': 'admin'}, follow_redirects=True)
-    assert b'Welcome!' in resp.data
-    with client.session_transaction() as sess:
-        assert sess.get('user_id') == 1
+    assert b'Account' in resp.data
+    assert ('localhost', '/', 'access_token_cookie') in client._cookies
 
 
 def test_login_failure(client):
@@ -57,7 +56,7 @@ def test_users_requires_login(client):
 
 def test_session_timeout_one_hour(client):
     resp = client.post(
-        '/login', data={'username': 'admin', 'password': 'admin'}, follow_redirects=True
+        '/login', data={'username': 'admin', 'password': 'admin'}, follow_redirects=False
     )
     cookie = resp.headers.get('Set-Cookie')
     from http.cookies import SimpleCookie
@@ -65,10 +64,11 @@ def test_session_timeout_one_hour(client):
 
     simple = SimpleCookie()
     simple.load(cookie)
-    exp = simple['session']['expires']
-    assert exp  # expires attribute is set
+    token = simple['access_token_cookie'].value
+    from flask_jwt_extended import decode_token
     from datetime import timezone
-    expire_dt = datetime.strptime(exp, '%a, %d %b %Y %H:%M:%S GMT').replace(tzinfo=timezone.utc)
+    payload = decode_token(token)
+    expire_dt = datetime.fromtimestamp(payload['exp'], tz=timezone.utc)
     delta = expire_dt - datetime.now(timezone.utc)
     assert timedelta(minutes=59) <= delta <= timedelta(hours=1, minutes=1)
 
@@ -99,7 +99,7 @@ def test_update_email_and_password(client, login):
         assert user.hashed_password != old_hash
     client.get('/logout')
     resp = login(password='newpass')
-    assert b'Welcome!' in resp.data
+    assert b'Account' in resp.data
 
 
 def test_update_password_mismatch(client, login):

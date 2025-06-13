@@ -7,6 +7,14 @@ from flask import (
     session,
     request,
 )
+from flask_jwt_extended import (
+    create_access_token,
+    set_access_cookies,
+    unset_jwt_cookies,
+    verify_jwt_in_request,
+    get_jwt_identity,
+    get_jwt,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 from ..models import User
 from ..extensions import db
@@ -20,10 +28,18 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.app_context_processor
 def inject_current_user():
     user = None
-    if session.get('user_id'):
-        user = db.session.get(User, session['user_id'])
+    claims = {}
+    try:
+        verify_jwt_in_request(optional=True)
+        user_id = get_jwt_identity()
+        claims = get_jwt()
+        if user_id:
+            user = db.session.get(User, int(user_id))
+    except Exception:
+        pass
     return {
         'current_user': user,
+        'current_claims': claims,
         'password_form': ChangePasswordForm(),
         'email_form': ChangeEmailForm(),
     }
@@ -31,9 +47,11 @@ def inject_current_user():
 
 @auth_bp.route('/', methods=['GET'])
 def index():
-    if session.get('logged_in'):
-        return render_template('home.html')
-    return redirect(url_for('auth.login'))
+    try:
+        verify_jwt_in_request()
+    except Exception:
+        return redirect(url_for('auth.login'))
+    return render_template('home.html')
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -44,36 +62,35 @@ def login():
         user = User.query.filter_by(username=data.username).first()
         if user and check_password_hash(user.hashed_password, data.password):
             session.permanent = True
-            session['logged_in'] = True
-            session['is_admin'] = user.is_admin
-            session['user_id'] = user.id
+            access_token = create_access_token(
+                identity=str(user.id), additional_claims={'is_admin': user.is_admin}
+            )
+            resp = redirect(url_for('auth.index'))
+            set_access_cookies(resp, access_token)
             flash('Logged in successfully.', 'success')
-            return redirect(url_for('auth.index'))
+            return resp
         flash('Invalid credentials', 'danger')
     return render_template('login.html', form=form)
 
 
 @auth_bp.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    session.pop('is_admin', None)
-    session.pop('user_id', None)
+    resp = redirect(url_for('auth.login'))
+    unset_jwt_cookies(resp)
     flash('Logged out', 'info')
-    return redirect(url_for('auth.login'))
+    return resp
 
 
 
 def _get_logged_in_user():
-    if not session.get('logged_in'):
+    try:
+        verify_jwt_in_request()
+    except Exception:
         return None
-    user_id = session.get('user_id')
+    user_id = get_jwt_identity()
     if not user_id:
-        session.clear()
         return None
-    user = db.session.get(User, user_id)
-    if not user:
-        session.clear()
-        return None
+    user = db.session.get(User, int(user_id))
     return user
 
 

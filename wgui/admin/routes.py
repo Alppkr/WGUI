@@ -4,10 +4,10 @@ from flask import (
     redirect,
     url_for,
     flash,
-    session,
     request,
     abort,
 )
+from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from werkzeug.security import generate_password_hash
 
 from ..models import User
@@ -19,7 +19,12 @@ admin_bp = Blueprint('users', __name__, url_prefix='/users')
 
 
 def admin_required():
-    return session.get('logged_in') and session.get('is_admin')
+    try:
+        verify_jwt_in_request()
+        claims = get_jwt()
+        return claims.get('is_admin') is True
+    except Exception:
+        return False
 
 
 @admin_bp.before_request
