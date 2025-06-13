@@ -130,7 +130,9 @@ def export_list(list_type: str, list_name: str):
     if not lst:
         abort(404)
     items = DataList.query.filter_by(category=lst.name).all()
-    content = "\n".join(item.data for item in items)
+    header = f"type={slugify(lst.type)}"
+    lines = [header] + [item.data for item in items]
+    content = "\n".join(lines)
     return Response(
         content,
         mimetype="text/plain",

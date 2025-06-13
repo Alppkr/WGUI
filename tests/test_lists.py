@@ -88,4 +88,5 @@ def test_export_list(client):
     resp = client.get('/lists/ip/export.txt')
     assert resp.status_code == 200
     assert resp.headers['Content-Type'].startswith('text/plain')
+    assert resp.data.startswith(b'type=ip\n')
     assert b'1.2.3.4' in resp.data
