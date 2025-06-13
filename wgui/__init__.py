@@ -3,13 +3,16 @@ from .auth.routes import auth_bp
 from .admin import admin_bp
 from .lists import lists_bp
 from .extensions import db, migrate
+from flask_migrate import upgrade
 from .models import User, ListModel
 import os
 
 
-def create_app():
+def create_app(config_overrides=None):
     app = Flask(__name__)
     app.config.from_object('wgui.config.Config')
+    if config_overrides:
+        app.config.update(config_overrides)
 
     # Security-related configs
     app.config.setdefault('SESSION_COOKIE_SECURE', True)
@@ -19,19 +22,21 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    if not os.environ.get('FLASK_MIGRATE'):
-        with app.app_context():
+    with app.app_context():
+        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///:memory:'):
             db.create_all()
-            if not User.query.filter_by(username=app.config['USERNAME']).first():
-                user = User(
-                    username=app.config['USERNAME'],
-                    email='admin@example.com',
-                    hashed_password=app.config['PASSWORD_HASH'],
-                    is_admin=True,
-                    first_login=True,
-                )
-                db.session.add(user)
-            db.session.commit()
+        else:
+            upgrade()
+        if not User.query.filter_by(username=app.config['USERNAME']).first():
+            user = User(
+                username=app.config['USERNAME'],
+                email='admin@example.com',
+                hashed_password=app.config['PASSWORD_HASH'],
+                is_admin=True,
+                first_login=True,
+            )
+            db.session.add(user)
+        db.session.commit()
 
 
     app.register_blueprint(auth_bp)

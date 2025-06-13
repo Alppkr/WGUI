@@ -13,12 +13,11 @@ from wgui.models import User, ListModel
 
 @pytest.fixture
 def client():
-    app = create_app()
-    app.config.update(
-        TESTING=True,
-        WTF_CSRF_ENABLED=False,
-        SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
-    )
+    app = create_app({
+        'TESTING': True,
+        'WTF_CSRF_ENABLED': False,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'
+    })
     with app.app_context():
         db.drop_all()
         db.create_all()

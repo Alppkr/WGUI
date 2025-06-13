@@ -9,6 +9,8 @@ and store items with data, description and date.
 
 ```bash
 pip install -r requirements.txt
+# The application will automatically apply migrations on startup, but you can
+# also run them manually:
 flask --app wgui db upgrade
 ```
 
