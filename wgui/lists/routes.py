@@ -38,6 +38,9 @@ def inject_lists():
 
 @lists_bp.before_request
 def require_login():
+    """Require authentication for all list routes except exports."""
+    if request.endpoint == 'lists.export_list':
+        return
     try:
         verify_jwt_in_request()
     except Exception:

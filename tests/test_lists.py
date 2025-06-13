@@ -74,18 +74,17 @@ def test_plus_button_sets_type(client, login):
     assert b'/lists/add?type=String' in resp.data
 
 
-def test_export_list(client, login):
-    login()
-    client.post('/lists/add', data={'name': 'Export', 'list_type': 'Ip'}, follow_redirects=True)
-    from wgui.models import ListModel
+def test_export_list(client):
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
     with client.application.app_context():
-        lst = ListModel.query.filter_by(name='Export').first()
-        list_id = lst.id
-    client.post(
-        f'/lists/{list_id}/add',
-        data={'data': '1.2.3.4', 'description': '', 'date': '2025-06-13'},
-        follow_redirects=True,
-    )
+        lst = ListModel(name='Export', type='Ip')
+        db.session.add(lst)
+        db.session.flush()
+        db.session.add(
+            DataList(category=lst.name, data='1.2.3.4', description='', date=date(2025, 6, 13))
+        )
+        db.session.commit()
     resp = client.get('/lists/ip/export.txt')
     assert resp.status_code == 200
     assert resp.headers['Content-Type'].startswith('text/plain')
