@@ -1,5 +1,4 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
 
 
 class LoginData(BaseModel):
@@ -7,6 +6,9 @@ class LoginData(BaseModel):
     password: str
 
 
-class UpdateAccountData(BaseModel):
-    email: Optional[EmailStr] = None
-    password: Optional[str] = None
+class ChangeEmailData(BaseModel):
+    email: EmailStr
+
+
+class ChangePasswordData(BaseModel):
+    password: str

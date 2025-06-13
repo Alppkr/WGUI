@@ -6,13 +6,12 @@ from flask import (
     flash,
     session,
     request,
-    abort,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from ..models import User
 from ..extensions import db
-from .forms import LoginForm, UpdateAccountForm
-from .models import LoginData, UpdateAccountData
+from .forms import LoginForm, ChangeEmailForm, ChangePasswordForm
+from .models import LoginData, ChangeEmailData, ChangePasswordData
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -23,7 +22,11 @@ def inject_current_user():
     user = None
     if session.get('user_id'):
         user = db.session.get(User, session['user_id'])
-    return {'current_user': user}
+    return {
+        'current_user': user,
+        'password_form': ChangePasswordForm(),
+        'email_form': ChangeEmailForm(),
+    }
 
 
 @auth_bp.route('/', methods=['GET'])
@@ -59,35 +62,52 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-@auth_bp.route('/account', methods=['GET', 'POST'])
-def account():
+
+def _get_logged_in_user():
     if not session.get('logged_in'):
-        return redirect(url_for('auth.login'))
-    form = UpdateAccountForm()
+        return None
     user_id = session.get('user_id')
     if not user_id:
         session.clear()
-        return redirect(url_for('auth.login'))
+        return None
     user = db.session.get(User, user_id)
     if not user:
         session.clear()
+        return None
+    return user
+
+
+@auth_bp.route('/account/email', methods=['POST'])
+def update_email():
+    user = _get_logged_in_user()
+    if not user:
         return redirect(url_for('auth.login'))
-    if request.method == 'GET':
-        form.email.data = user.email
+    form = ChangeEmailForm()
     if form.validate_on_submit():
-        data = UpdateAccountData(
-            email=form.email.data or None,
-            password=form.password.data or None,
-        )
-        if data.email:
-            user.email = data.email
-        if data.password:
-            user.hashed_password = generate_password_hash(data.password)
+        data = ChangeEmailData(email=form.email.data)
+        user.email = data.email
         db.session.commit()
-        flash('Account updated', 'success')
-        return redirect(url_for('auth.account'))
-    elif request.method == 'POST':
+        flash('Email updated', 'success')
+    else:
         for field_errors in form.errors.values():
             for error in field_errors:
                 flash(error, 'danger')
-    return render_template('account.html', form=form)
+    return redirect(request.referrer or url_for('auth.index'))
+
+
+@auth_bp.route('/account/password', methods=['POST'])
+def update_password():
+    user = _get_logged_in_user()
+    if not user:
+        return redirect(url_for('auth.login'))
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        data = ChangePasswordData(password=form.password.data)
+        user.hashed_password = generate_password_hash(data.password)
+        db.session.commit()
+        flash('Password updated', 'success')
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, 'danger')
+    return redirect(request.referrer or url_for('auth.index'))

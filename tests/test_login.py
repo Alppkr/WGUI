@@ -74,41 +74,38 @@ def test_session_timeout_one_hour(client):
 
 
 def test_account_requires_login(client):
-    resp = client.get('/account', follow_redirects=True)
+    resp = client.post('/account/email', follow_redirects=True)
     assert b'Login' in resp.data
 
 
-def test_update_account(client, login):
+def test_update_email_and_password(client, login):
     login()
     from wgui.models import User
     from wgui.extensions import db
     with client.application.app_context():
         orig_user = db.session.get(User, 1)
         old_hash = orig_user.hashed_password
+    resp = client.post('/account/email', data={'email': 'new@example.com'}, follow_redirects=True)
+    assert b'Email updated' in resp.data
     resp = client.post(
-        '/account',
-        data={
-            'email': 'new@example.com',
-            'password': 'newpass',
-            'confirm_password': 'newpass',
-        },
+        '/account/password',
+        data={'password': 'newpass', 'confirm_password': 'newpass'},
         follow_redirects=True,
     )
-    assert b'Account updated' in resp.data
+    assert b'Password updated' in resp.data
     with client.application.app_context():
         user = db.session.get(User, 1)
         assert user.email == 'new@example.com'
         assert user.hashed_password != old_hash
-    # logout and login with new password
     client.get('/logout')
     resp = login(password='newpass')
     assert b'Welcome!' in resp.data
 
 
-def test_update_account_password_mismatch(client, login):
+def test_update_password_mismatch(client, login):
     login()
     resp = client.post(
-        '/account',
+        '/account/password',
         data={'password': 'abc', 'confirm_password': 'xyz'},
         follow_redirects=True,
     )

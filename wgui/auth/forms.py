@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired, Email, Optional, ValidationError
+from wtforms.validators import DataRequired, Email, ValidationError
 
 
 class LoginForm(FlaskForm):
@@ -8,14 +8,14 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
 
 
-class UpdateAccountForm(FlaskForm):
-    email = StringField('Email', validators=[Optional(), Email()])
-    password = PasswordField('New Password', validators=[Optional()])
-    confirm_password = PasswordField('Confirm Password', validators=[Optional()])
+class ChangeEmailForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+
+
+class ChangePasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
 
     def validate_confirm_password(self, field):
-        if self.password.data:
-            if not field.data:
-                raise ValidationError('Please confirm your new password')
-            if field.data != self.password.data:
-                raise ValidationError('Passwords must match')
+        if field.data != self.password.data:
+            raise ValidationError('Passwords must match')
