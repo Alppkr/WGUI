@@ -4,7 +4,11 @@ from datetime import date
 
 def test_add_and_delete_item(client, login):
     login()
-    resp = client.post('/lists/ip/add', data={
+    from wgui.models import ListModel
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='Ip').first()
+        list_id = lst.id
+    resp = client.post(f'/lists/{list_id}/add', data={
         'data': '1.1.1.1',
         'description': 'cloudflare',
         'date': '2025-06-13'
@@ -25,5 +29,16 @@ def test_add_and_delete_item(client, login):
 
 
 def test_lists_require_login(client):
-    resp = client.get('/lists/ip/', follow_redirects=True)
+    from wgui.models import ListModel
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='Ip').first()
+        list_id = lst.id
+    resp = client.get(f'/lists/{list_id}/', follow_redirects=True)
     assert b'Login' in resp.data
+
+
+def test_add_list(client, login):
+    login()
+    resp = client.post('/lists/add', data={'name': 'My List'}, follow_redirects=True)
+    assert b'List created' in resp.data
+    assert b'My List' in resp.data

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}{{ category|capitalize }} List{% endblock %}
+{% block title %}{{ list.name }} List{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>{{ category|capitalize }} List</h2>
-    <a class="btn btn-success" href="{{ url_for('lists.add_item', category=category) }}">Add</a>
+    <h2>{{ list.name }} List</h2>
+    <a class="btn btn-success" href="{{ url_for('lists.add_item', list_id=list.id) }}">Add</a>
 </div>
 <table class="table table-striped">
     <thead>

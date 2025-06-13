@@ -10,3 +10,7 @@ class AddItemForm(FlaskForm):
 class DeleteForm(FlaskForm):
     """Simple form for CSRF protection when deleting list items."""
     pass
+
+
+class AddListForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])

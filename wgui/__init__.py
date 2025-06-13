@@ -3,7 +3,7 @@ from .auth.routes import auth_bp
 from .admin import admin_bp
 from .lists import lists_bp
 from .extensions import db, migrate
-from .models import User
+from .models import User, ListModel
 import os
 
 
@@ -31,7 +31,11 @@ def create_app():
                     first_login=True,
                 )
                 db.session.add(user)
-                db.session.commit()
+            # seed default lists if none exist
+            if ListModel.query.count() == 0:
+                for name in ['Ip', 'Ip Range', 'String']:
+                    db.session.add(ListModel(name=name))
+            db.session.commit()
 
 
     app.register_blueprint(auth_bp)

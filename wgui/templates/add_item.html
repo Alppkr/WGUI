@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Add Item{% endblock %}
 {% block content %}
-<h2>Add {{ category|capitalize }} Item</h2>
+<h2>Add {{ list.name }} Item</h2>
 <form method="post">
     {{ form.hidden_tag() }}
     <div class="mb-3">
@@ -17,6 +17,6 @@
         {{ form.date(class="form-control") }}
     </div>
     <button class="btn btn-primary" type="submit">Add</button>
-    <a class="btn btn-secondary" href="{{ url_for('lists.list_items', category=category) }}">Cancel</a>
+    <a class="btn btn-secondary" href="{{ url_for('lists.list_items', list_id=list.id) }}">Cancel</a>
 </form>
 {% endblock %}

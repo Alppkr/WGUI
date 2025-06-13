@@ -12,6 +12,14 @@ class User(db.Model):
     def __repr__(self) -> str:
         return f"<User {self.username}>"
 
+
+class ListModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<List {self.name}>"
+
 class DataList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(20), nullable=False)
