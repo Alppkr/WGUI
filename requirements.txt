@@ -6,3 +6,4 @@ Flask-SQLAlchemy>=3.0
 Flask-Migrate>=4.0
 pytest
 email-validator
+Flask-JWT-Extended>=4.5
