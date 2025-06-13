@@ -31,10 +31,6 @@ def create_app():
                     first_login=True,
                 )
                 db.session.add(user)
-            # seed default lists if none exist
-            if ListModel.query.count() == 0:
-                for name in ['Ip', 'Ip Range', 'String']:
-                    db.session.add(ListModel(name=name))
             db.session.commit()
 
 

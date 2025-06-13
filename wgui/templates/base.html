@@ -24,11 +24,13 @@
         <nav class="col-md-2 d-none d-md-block bg-white border-end sidebar py-3">
             <ul class="nav flex-column">
                 {% for l in side_lists %}
-                <li class="nav-item d-flex justify-content-between mt-1">
+                <li class="nav-item mt-1">
                     <a class="nav-link p-0" href="{{ url_for('lists.list_items', list_id=l.id) }}"><strong>{{ l.name }}</strong></a>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lists.add_list') }}">+</a>
                 </li>
                 {% endfor %}
+                <li class="nav-item mt-2">
+                    <a class="btn btn-sm btn-outline-secondary w-100" href="{{ url_for('lists.add_list') }}">+</a>
+                </li>
             </ul>
         </nav>
         {% endif %}

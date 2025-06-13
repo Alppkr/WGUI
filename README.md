@@ -2,8 +2,8 @@
 
 Simple Flask login page with default admin credentials.
 Admin users can manage application users from the **Users** page.
-Logged in users can create custom lists and store items with data, description
-and date.
+Logged in users can create custom lists of type **Ip**, **Ip Range** or **String**
+and store items with data, description and date.
 
 ## Setup
 

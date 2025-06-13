@@ -8,6 +8,10 @@
         {{ form.name.label(class="form-label") }}
         {{ form.name(class="form-control") }}
     </div>
+    <div class="mb-3">
+        {{ form.list_type.label(class="form-label") }}
+        {{ form.list_type(class="form-select") }}
+    </div>
     <button class="btn btn-primary" type="submit">Add</button>
     <a class="btn btn-secondary" href="{{ url_for('auth.index') }}">Cancel</a>
 </form>

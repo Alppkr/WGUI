@@ -9,3 +9,4 @@ class AddItemData(BaseModel):
 
 class AddListData(BaseModel):
     name: str
+    type: str

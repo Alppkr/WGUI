@@ -22,11 +22,11 @@ def require_login():
 def add_list():
     form = AddListForm()
     if form.validate_on_submit():
-        data = AddListData(name=form.name.data)
+        data = AddListData(name=form.name.data, type=form.list_type.data)
         if ListModel.query.filter_by(name=data.name).first():
             flash('List already exists', 'danger')
         else:
-            new_list = ListModel(name=data.name)
+            new_list = ListModel(name=data.name, type=data.type)
             db.session.add(new_list)
             db.session.commit()
             flash('List created', 'success')

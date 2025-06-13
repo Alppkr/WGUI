@@ -28,8 +28,6 @@ def client():
             hashed_password=generate_password_hash('admin'),
             is_admin=True,
         ))
-        for name in ['Ip', 'Ip Range', 'String']:
-            db.session.add(ListModel(name=name))
         db.session.commit()
     with app.test_client() as client:
         yield client

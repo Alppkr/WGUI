@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, DateField
+from wtforms import StringField, DateField, SelectField
 from wtforms.validators import DataRequired
 
 class AddItemForm(FlaskForm):
@@ -14,3 +14,8 @@ class DeleteForm(FlaskForm):
 
 class AddListForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
+    list_type = SelectField(
+        'Type',
+        choices=[('Ip', 'Ip'), ('Ip Range', 'Ip Range'), ('String', 'String')],
+        validators=[DataRequired()],
+    )
