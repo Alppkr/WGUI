@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session
+from flask import Blueprint, render_template, redirect, url_for, flash, session, request
 from ..models import DataList, ListModel
 from ..extensions import db
 from .forms import AddItemForm, DeleteForm, AddListForm
@@ -24,6 +24,10 @@ def require_login():
 @lists_bp.route('/add', methods=['GET', 'POST'])
 def add_list():
     form = AddListForm()
+    if request.method == 'GET':
+        default_type = request.args.get('type')
+        if default_type:
+            form.list_type.data = default_type
     if form.validate_on_submit():
         data = AddListData(name=form.name.data, type=form.list_type.data)
         if ListModel.query.filter_by(name=data.name).first():

@@ -27,7 +27,7 @@
                 <li class="nav-item mb-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <strong>{{ type }}</strong>
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lists.add_list') }}">+</a>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lists.add_list', type=type) }}">+</a>
                     </div>
                     <ul class="nav flex-column ms-3 mt-1">
                         {% for l in lists_by_type[type] %}

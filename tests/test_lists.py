@@ -63,3 +63,12 @@ def test_lists_grouped_by_type(client, login):
     range_list_pos = resp.data.index(b'Range Test')
     assert ip_pos < ip_list_pos
     assert ip_range_pos < range_list_pos
+
+
+def test_plus_button_sets_type(client, login):
+    """Plus button includes type parameter so form knows which type."""
+    login()
+    resp = client.get('/', follow_redirects=True)
+    assert b'/lists/add?type=Ip' in resp.data
+    assert b'/lists/add?type=Ip+Range' in resp.data
+    assert b'/lists/add?type=String' in resp.data
