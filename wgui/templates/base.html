@@ -18,16 +18,30 @@
         {% endif %}
     </div>
 </nav>
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+<div class="container-fluid">
+    <div class="row">
+        {% if session.get('logged_in') %}
+        <nav class="col-md-2 d-none d-md-block bg-white border-end sidebar py-3">
+            <ul class="nav flex-column">
+                <li class="nav-item"><strong>Ip</strong></li>
+                <li class="nav-item"><strong>Ip Range</strong></li>
+                <li class="nav-item"><strong>String</strong></li>
+            </ul>
+        </nav>
+        {% endif %}
 
-    {% block content %}{% endblock %}
+        <main class="col ms-md-3 p-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 </div>
 </body>
 </html>
