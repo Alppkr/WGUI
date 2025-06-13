@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from werkzeug.security import generate_password_hash
 
 
@@ -14,3 +15,4 @@ class Config:
         'DATABASE_URL', 'sqlite:///wgui.db'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)

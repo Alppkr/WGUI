@@ -51,3 +51,21 @@ def test_admin_user_management(client, login):
 def test_users_requires_login(client):
     resp = client.get('/users/', follow_redirects=True)
     assert b'Login' in resp.data
+
+
+def test_session_timeout_one_hour(client):
+    resp = client.post(
+        '/login', data={'username': 'admin', 'password': 'admin'}, follow_redirects=True
+    )
+    cookie = resp.headers.get('Set-Cookie')
+    from http.cookies import SimpleCookie
+    from datetime import datetime, timedelta
+
+    simple = SimpleCookie()
+    simple.load(cookie)
+    exp = simple['session']['expires']
+    assert exp  # expires attribute is set
+    from datetime import timezone
+    expire_dt = datetime.strptime(exp, '%a, %d %b %Y %H:%M:%S GMT').replace(tzinfo=timezone.utc)
+    delta = expire_dt - datetime.now(timezone.utc)
+    assert timedelta(minutes=59) <= delta <= timedelta(hours=1, minutes=1)

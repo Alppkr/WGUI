@@ -22,6 +22,7 @@ def login():
         data = LoginData(username=form.username.data, password=form.password.data)
         user = User.query.filter_by(username=data.username).first()
         if user and check_password_hash(user.hashed_password, data.password):
+            session.permanent = True
             session['logged_in'] = True
             session['is_admin'] = user.is_admin
             flash('Logged in successfully.', 'success')
