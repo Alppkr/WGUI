@@ -105,6 +105,16 @@ def test_update_account(client, login):
     assert b'Welcome!' in resp.data
 
 
+def test_update_account_password_mismatch(client, login):
+    login()
+    resp = client.post(
+        '/account',
+        data={'password': 'abc', 'confirm_password': 'xyz'},
+        follow_redirects=True,
+    )
+    assert b'Passwords must match' in resp.data
+
+
 def test_account_dropdown(client, login):
     resp = login()
     assert b'Change Password' in resp.data

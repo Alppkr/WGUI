@@ -81,4 +81,8 @@ def account():
         db.session.commit()
         flash('Account updated', 'success')
         return redirect(url_for('auth.account'))
+    elif request.method == 'POST':
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, 'danger')
     return render_template('account.html', form=form)
