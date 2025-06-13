@@ -1,4 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    request,
+    abort,
+    Response,
+)
 from ..models import DataList, ListModel
 from ..extensions import db
 from flask_jwt_extended import verify_jwt_in_request
@@ -95,3 +104,17 @@ def delete_item(item_id: int):
             return redirect(url_for('lists.list_items', list_id=lst.id))
         return redirect(url_for('auth.index'))
     return redirect(url_for('auth.index'))
+
+
+@lists_bp.route('/<int:list_id>/export')
+def export_list(list_id: int):
+    lst = db.session.get(ListModel, list_id)
+    if not lst:
+        abort(404)
+    items = DataList.query.filter_by(category=lst.name).all()
+    content = "\n".join(item.data for item in items)
+    return Response(
+        content,
+        mimetype="text/plain",
+        headers={"Content-Disposition": f"attachment; filename={lst.name}.txt"},
+    )

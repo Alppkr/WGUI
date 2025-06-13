@@ -72,3 +72,21 @@ def test_plus_button_sets_type(client, login):
     assert b'/lists/add?type=Ip' in resp.data
     assert b'/lists/add?type=Ip+Range' in resp.data
     assert b'/lists/add?type=String' in resp.data
+
+
+def test_export_list(client, login):
+    login()
+    client.post('/lists/add', data={'name': 'Export', 'list_type': 'Ip'}, follow_redirects=True)
+    from wgui.models import ListModel
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='Export').first()
+        list_id = lst.id
+    client.post(
+        f'/lists/{list_id}/add',
+        data={'data': '1.2.3.4', 'description': '', 'date': '2025-06-13'},
+        follow_redirects=True,
+    )
+    resp = client.get(f'/lists/{list_id}/export')
+    assert resp.status_code == 200
+    assert resp.headers['Content-Type'].startswith('text/plain')
+    assert b'1.2.3.4' in resp.data
