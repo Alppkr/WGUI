@@ -64,7 +64,11 @@ def account():
     if not session.get('logged_in'):
         return redirect(url_for('auth.login'))
     form = UpdateAccountForm()
-    user = db.session.get(User, session.get('user_id'))
+    user_id = session.get('user_id')
+    if not user_id:
+        session.clear()
+        return redirect(url_for('auth.login'))
+    user = db.session.get(User, user_id)
     if not user:
         session.clear()
         return redirect(url_for('auth.login'))
