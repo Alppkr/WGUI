@@ -66,7 +66,8 @@ def account():
     form = UpdateAccountForm()
     user = db.session.get(User, session.get('user_id'))
     if not user:
-        abort(404)
+        session.clear()
+        return redirect(url_for('auth.login'))
     if request.method == 'GET':
         form.email.data = user.email
     if form.validate_on_submit():

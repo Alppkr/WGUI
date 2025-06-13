@@ -22,8 +22,8 @@
                 <li class="dropdown-item-text fw-bold">{{ current_user.username }}</li>
                 <li class="dropdown-item-text">{{ current_user.email }}</li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ url_for('auth.account') }}#password">Change Password</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('auth.account') }}#email">Change Email</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.account', _anchor='password') }}">Change Password</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.account', _anchor='email') }}">Change Email</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
             </ul>
