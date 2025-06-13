@@ -86,7 +86,7 @@ def test_export_list(client, login):
         data={'data': '1.2.3.4', 'description': '', 'date': '2025-06-13'},
         follow_redirects=True,
     )
-    resp = client.get(f'/lists/{list_id}/export')
+    resp = client.get('/lists/ip/export.txt')
     assert resp.status_code == 200
     assert resp.headers['Content-Type'].startswith('text/plain')
     assert b'1.2.3.4' in resp.data

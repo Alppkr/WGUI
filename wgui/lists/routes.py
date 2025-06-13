@@ -14,7 +14,18 @@ from flask_jwt_extended import verify_jwt_in_request
 from .forms import AddItemForm, DeleteForm, AddListForm
 from .models import AddItemData, AddListData
 
+
 lists_bp = Blueprint('lists', __name__, url_prefix='/lists')
+
+
+def slugify(text: str) -> str:
+    """Simple slugify function used for export URLs."""
+    return text.lower().replace(" ", "-")
+
+
+@lists_bp.app_template_filter("slugify")
+def slugify_filter(s: str) -> str:
+    return slugify(s)
 
 
 @lists_bp.app_context_processor
@@ -106,9 +117,13 @@ def delete_item(item_id: int):
     return redirect(url_for('auth.index'))
 
 
-@lists_bp.route('/<int:list_id>/export')
-def export_list(list_id: int):
-    lst = db.session.get(ListModel, list_id)
+@lists_bp.route('/<list_type>/<list_name>.txt')
+def export_list(list_type: str, list_name: str):
+    """Export a list as plain text using type and name in the URL."""
+    def matches(lst: ListModel) -> bool:
+        return slugify(lst.type) == list_type and slugify(lst.name) == list_name
+
+    lst = next((l for l in ListModel.query.all() if matches(l)), None)
     if not lst:
         abort(404)
     items = DataList.query.filter_by(category=lst.name).all()
