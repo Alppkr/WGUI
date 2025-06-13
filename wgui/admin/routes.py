@@ -49,6 +49,10 @@ def add_user():
         db.session.commit()
         flash('User added', 'success')
         return redirect(url_for('users.list_users'))
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, 'danger')
     return render_template('add_user.html', form=form)
 
 

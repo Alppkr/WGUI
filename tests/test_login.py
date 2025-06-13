@@ -41,13 +41,25 @@ def login(client, username='admin', password='admin'):
     return client.post('/login', data={'username': username, 'password': password}, follow_redirects=True)
 
 
+def test_add_user_password_mismatch(client):
+    login(client)
+    resp = client.post('/users/add', data={
+        'username': 'bob',
+        'email': 'bob@example.com',
+        'password': 'secret',
+        'confirm_password': 'wrong'
+    }, follow_redirects=True)
+    assert b'Passwords must match' in resp.data
+
+
 def test_admin_user_management(client):
     login(client)
     # add user
     resp = client.post('/users/add', data={
         'username': 'bob',
         'email': 'bob@example.com',
-        'password': 'secret'
+        'password': 'secret',
+        'confirm_password': 'secret'
     }, follow_redirects=True)
     assert b'User added' in resp.data
     assert b'bob@example.com' in resp.data
