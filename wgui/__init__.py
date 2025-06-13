@@ -1,5 +1,6 @@
 from flask import Flask
 from .auth.routes import auth_bp
+from .admin import admin_bp
 from .extensions import db, migrate
 from .models import User
 import os
@@ -31,6 +32,8 @@ def create_app():
                 db.session.add(user)
                 db.session.commit()
 
+
     app.register_blueprint(auth_bp)
+    app.register_blueprint(admin_bp)
 
     return app

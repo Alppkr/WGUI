@@ -1,6 +1,7 @@
 # WGUI
 
 Simple Flask login page with default admin credentials.
+Admin users can manage application users from the **Users** page.
 
 ## Setup
 

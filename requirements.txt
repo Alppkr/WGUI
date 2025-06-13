@@ -5,3 +5,4 @@ Werkzeug>=3.0
 Flask-SQLAlchemy>=3.0
 Flask-Migrate>=4.0
 pytest
+email-validator
