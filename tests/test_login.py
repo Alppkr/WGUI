@@ -103,3 +103,10 @@ def test_update_account(client, login):
     client.get('/logout')
     resp = login(password='newpass')
     assert b'Welcome!' in resp.data
+
+
+def test_account_dropdown(client, login):
+    resp = login()
+    assert b'Change Password' in resp.data
+    assert b'Change Email' in resp.data
+    assert b'admin@example.com' in resp.data

@@ -12,10 +12,22 @@
         <a class="navbar-brand" href="{{ url_for('auth.index') }}">WGUI</a>
         {% if session.get('logged_in') %}
         {% if session.get('is_admin') %}
-        <a class="btn btn-outline-primary me-1" href="{{ url_for('users.list_users') }}">Users</a>
+        <a class="btn btn-outline-primary me-0" href="{{ url_for('users.list_users') }}">Users</a>
         {% endif %}
-        <a class="btn btn-outline-secondary me-1" href="{{ url_for('auth.account') }}">Account</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('auth.logout') }}">Logout</a>
+        <div class="dropdown ms-1">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Account
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li class="dropdown-item-text fw-bold">{{ current_user.username }}</li>
+                <li class="dropdown-item-text">{{ current_user.email }}</li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.account') }}#password">Change Password</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.account') }}#email">Change Email</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+            </ul>
+        </div>
         {% endif %}
     </div>
 </nav>

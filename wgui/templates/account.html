@@ -6,11 +6,11 @@
     <h2 class="card-title mb-3">Update Account</h2>
     <form method="post">
       {{ form.hidden_tag() }}
-      <div class="mb-3">
+      <div class="mb-3" id="email">
         {{ form.email.label(class="form-label") }}
         {{ form.email(class="form-control") }}
       </div>
-      <div class="mb-3">
+      <div class="mb-3" id="password">
         {{ form.password.label(class="form-label") }}
         {{ form.password(class="form-control") }}
       </div>

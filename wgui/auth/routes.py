@@ -9,6 +9,14 @@ from .models import LoginData, UpdateAccountData
 auth_bp = Blueprint('auth', __name__)
 
 
+@auth_bp.app_context_processor
+def inject_current_user():
+    user = None
+    if session.get('user_id'):
+        user = User.query.get(session['user_id'])
+    return {'current_user': user}
+
+
 @auth_bp.route('/', methods=['GET'])
 def index():
     if session.get('logged_in'):
