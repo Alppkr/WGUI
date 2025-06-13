@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Add List{% endblock %}
+{% block content %}
+<h2>Add List</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control") }}
+    </div>
+    {{ form.list_type() }}
+    <button class="btn btn-primary" type="submit">Add</button>
+    <a class="btn btn-secondary" href="{{ url_for('auth.index') }}">Cancel</a>
+</form>
+{% endblock %}
+

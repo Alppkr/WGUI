@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ list.name }} List{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ list.name }} List</h2>
+    <a class="btn btn-success" href="{{ url_for('lists.add_item', list_id=list.id) }}">Add</a>
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        <tr>
+            <td>{{ item.data }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.date }}</td>
+            <td>
+                <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" style="display:inline-block;">
+                    {{ delete_form.hidden_tag() }}
+                    <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
