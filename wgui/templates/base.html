@@ -23,9 +23,18 @@
         {% if session.get('logged_in') %}
         <nav class="col-md-2 d-none d-md-block bg-white border-end sidebar py-3">
             <ul class="nav flex-column">
-                <li class="nav-item"><strong>Ip</strong></li>
-                <li class="nav-item"><strong>Ip Range</strong></li>
-                <li class="nav-item"><strong>String</strong></li>
+                <li class="nav-item d-flex justify-content-between">
+                    <a class="nav-link p-0" href="{{ url_for('lists.list_items', category='ip') }}"><strong>Ip</strong></a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lists.add_item', category='ip') }}">+</a>
+                </li>
+                <li class="nav-item d-flex justify-content-between mt-1">
+                    <a class="nav-link p-0" href="{{ url_for('lists.list_items', category='ip_range') }}"><strong>Ip Range</strong></a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lists.add_item', category='ip_range') }}">+</a>
+                </li>
+                <li class="nav-item d-flex justify-content-between mt-1">
+                    <a class="nav-link p-0" href="{{ url_for('lists.list_items', category='string') }}"><strong>String</strong></a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lists.add_item', category='string') }}">+</a>
+                </li>
             </ul>
         </nav>
         {% endif %}

@@ -1,6 +1,7 @@
 from flask import Flask
 from .auth.routes import auth_bp
 from .admin import admin_bp
+from .lists import lists_bp
 from .extensions import db, migrate
 from .models import User
 import os
@@ -35,5 +36,6 @@ def create_app():
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(lists_bp)
 
     return app

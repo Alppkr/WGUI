@@ -11,3 +11,13 @@ class User(db.Model):
 
     def __repr__(self) -> str:
         return f"<User {self.username}>"
+
+class DataList(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(20), nullable=False)
+    data = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255))
+    date = db.Column(db.Date, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<DataList {self.category} {self.data}>"
