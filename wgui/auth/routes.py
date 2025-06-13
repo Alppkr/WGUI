@@ -1,4 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    session,
+    request,
+    abort,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 from ..models import User
 from ..extensions import db
@@ -13,7 +22,7 @@ auth_bp = Blueprint('auth', __name__)
 def inject_current_user():
     user = None
     if session.get('user_id'):
-        user = User.query.get(session['user_id'])
+        user = db.session.get(User, session['user_id'])
     return {'current_user': user}
 
 
@@ -55,7 +64,9 @@ def account():
     if not session.get('logged_in'):
         return redirect(url_for('auth.login'))
     form = UpdateAccountForm()
-    user = User.query.get_or_404(session.get('user_id'))
+    user = db.session.get(User, session.get('user_id'))
+    if not user:
+        abort(404)
     if request.method == 'GET':
         form.email.data = user.email
     if form.validate_on_submit():

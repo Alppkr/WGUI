@@ -1,4 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    session,
+    request,
+    abort,
+)
 from werkzeug.security import generate_password_hash
 
 from ..models import User
@@ -60,7 +69,9 @@ def add_user():
 def delete_user(user_id: int):
     form = DeleteForm()
     if form.validate_on_submit():
-        user = User.query.get_or_404(user_id)
+        user = db.session.get(User, user_id)
+        if not user:
+            abort(404)
         if user.is_admin:
             flash('Cannot delete admin user', 'danger')
         else:

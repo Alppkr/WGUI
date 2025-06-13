@@ -43,7 +43,9 @@ def add_list():
 
 @lists_bp.route('/<int:list_id>/')
 def list_items(list_id: int):
-    lst = ListModel.query.get_or_404(list_id)
+    lst = db.session.get(ListModel, list_id)
+    if not lst:
+        abort(404)
     items = DataList.query.filter_by(category=lst.name).all()
     delete_form = DeleteForm()
     return render_template('list_items.html', list=lst, items=items, delete_form=delete_form)
@@ -51,7 +53,9 @@ def list_items(list_id: int):
 
 @lists_bp.route('/<int:list_id>/add', methods=['GET', 'POST'])
 def add_item(list_id: int):
-    lst = ListModel.query.get_or_404(list_id)
+    lst = db.session.get(ListModel, list_id)
+    if not lst:
+        abort(404)
     form = AddItemForm()
     if form.validate_on_submit():
         data = AddItemData(
@@ -76,7 +80,9 @@ def add_item(list_id: int):
 def delete_item(item_id: int):
     form = DeleteForm()
     if form.validate_on_submit():
-        item = DataList.query.get_or_404(item_id)
+        item = db.session.get(DataList, item_id)
+        if not item:
+            abort(404)
         category = item.category
         db.session.delete(item)
         db.session.commit()
