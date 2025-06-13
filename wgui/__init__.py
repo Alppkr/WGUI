@@ -5,7 +5,7 @@ from .lists import lists_bp
 from .extensions import db, migrate, jwt
 from .error_handlers import register_error_handlers
 from flask_migrate import upgrade
-from .models import User, ListModel
+from .models import User, ListModel, EmailSettings
 import os
 
 
@@ -40,6 +40,17 @@ def create_app(config_overrides=None):
                 first_login=True,
             )
             db.session.add(user)
+        if not EmailSettings.query.first():
+            db.session.add(
+                EmailSettings(
+                    from_email='test@example.com',
+                    to_email='admin@example.com',
+                    smtp_server='localhost',
+                    smtp_port=1025,
+                    smtp_user='',
+                    smtp_pass='',
+                )
+            )
         db.session.commit()
 
 

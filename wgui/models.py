@@ -30,3 +30,16 @@ class DataList(db.Model):
 
     def __repr__(self) -> str:
         return f"<DataList {self.category} {self.data}>"
+
+
+class EmailSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    from_email = db.Column(db.String(120), nullable=False)
+    to_email = db.Column(db.String(120), nullable=False)
+    smtp_server = db.Column(db.String(120), nullable=False)
+    smtp_port = db.Column(db.Integer, nullable=False)
+    smtp_user = db.Column(db.String(120))
+    smtp_pass = db.Column(db.String(120))
+
+    def __repr__(self) -> str:
+        return f"<EmailSettings {self.smtp_server}:{self.smtp_port}>"

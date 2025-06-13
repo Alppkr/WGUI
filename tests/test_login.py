@@ -117,3 +117,26 @@ def test_account_dropdown(client, login):
     assert b'Change Password' in resp.data
     assert b'Change Email' in resp.data
     assert b'admin@example.com' in resp.data
+
+
+def test_email_settings_update(client, login):
+    login()
+    resp = client.get('/users/email-settings', follow_redirects=True)
+    assert b'Email Settings' in resp.data
+    resp = client.post(
+        '/users/email-settings',
+        data={
+            'from_email': 'a@example.com',
+            'to_email': 'b@example.com',
+            'smtp_server': 'smtp.example.com',
+            'smtp_port': '25',
+            'smtp_user': 'u',
+            'smtp_pass': 'p',
+        },
+        follow_redirects=True,
+    )
+    assert b'Settings saved' in resp.data
+    from wgui.models import EmailSettings
+    with client.application.app_context():
+        settings = EmailSettings.query.first()
+        assert settings.smtp_server == 'smtp.example.com'

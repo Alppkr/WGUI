@@ -10,10 +10,10 @@ from flask import (
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from werkzeug.security import generate_password_hash
 
-from ..models import User
+from ..models import User, EmailSettings
 from ..extensions import db
-from .forms import AddUserForm, DeleteForm
-from .models import AddUserData
+from .forms import AddUserForm, DeleteForm, EmailSettingsForm
+from .models import AddUserData, EmailSettingsData
 
 admin_bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -84,3 +84,51 @@ def delete_user(user_id: int):
             db.session.commit()
             flash('User deleted', 'info')
     return redirect(url_for('users.list_users'))
+
+
+@admin_bp.route('/email-settings', methods=['GET', 'POST'])
+def email_settings():
+    settings = EmailSettings.query.first()
+    if not settings:
+        settings = EmailSettings(
+            from_email='test@example.com',
+            to_email='admin@example.com',
+            smtp_server='localhost',
+            smtp_port=1025,
+            smtp_user='',
+            smtp_pass='',
+        )
+        db.session.add(settings)
+        db.session.commit()
+
+    form = EmailSettingsForm()
+    if form.validate_on_submit():
+        data = EmailSettingsData(
+            from_email=form.from_email.data,
+            to_email=form.to_email.data,
+            smtp_server=form.smtp_server.data,
+            smtp_port=int(form.smtp_port.data),
+            smtp_user=form.smtp_user.data or '',
+            smtp_pass=form.smtp_pass.data or '',
+        )
+        settings.from_email = data.from_email
+        settings.to_email = data.to_email
+        settings.smtp_server = data.smtp_server
+        settings.smtp_port = data.smtp_port
+        settings.smtp_user = data.smtp_user
+        settings.smtp_pass = data.smtp_pass
+        db.session.commit()
+        flash('Settings saved', 'success')
+        return redirect(url_for('users.email_settings'))
+    elif request.method == 'GET':
+        form.from_email.data = settings.from_email
+        form.to_email.data = settings.to_email
+        form.smtp_server.data = settings.smtp_server
+        form.smtp_port.data = str(settings.smtp_port)
+        form.smtp_user.data = settings.smtp_user
+        form.smtp_pass.data = settings.smtp_pass
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, 'danger')
+    return render_template('email_settings.html', form=form)

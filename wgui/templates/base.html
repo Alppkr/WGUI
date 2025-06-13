@@ -14,6 +14,7 @@
         <div class="btn-group ms-auto">
             {% if current_claims.get('is_admin') %}
             <a class="btn btn-outline-primary" href="{{ url_for('users.list_users') }}">Users</a>
+            <a class="btn btn-outline-primary" href="{{ url_for('users.email_settings') }}">Email</a>
             {% endif %}
             <div class="btn-group" role="group">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
