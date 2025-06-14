@@ -18,7 +18,9 @@ flask --app wgui db upgrade
 
 ```bash
 python -m wgui
+celery -A wgui.tasks worker -B
 ```
+
 
 APScheduler runs in the background to remove expired list entries each day at midnight.
 Email notifications are sent before removal and when entries are deleted.
