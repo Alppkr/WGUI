@@ -93,3 +93,73 @@ sudo systemctl enable wgui
 ```
 
 The APScheduler job runs inside the Flask process and will clean up expired items daily at midnight. Email recipients and SMTP credentials can be configured from the **Email Settings** page once logged in as an admin.
+
+### Example Nginx Configuration
+
+To expose the application on port 80 and proxy requests to Gunicorn you can create
+`/etc/nginx/sites-available/wgui` with the following contents:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;  # change to your domain
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/tmp/wgui.sock;
+    }
+}
+```
+
+Enable the configuration and reload Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/wgui /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+If you serve the application over plain HTTP the login cookie will not be set because it uses the "Secure" flag. When placing Nginx in front of the app ensure HTTPS is enabled (or set `JWT_COOKIE_SECURE=False` for testing only). The simplest way is to configure TLS termination in Nginx.
+
+
+### Example Nginx Configuration with SSL
+
+Create `/etc/nginx/sites-available/wgui-ssl`:
+```nginx
+server {
+    listen 443 ssl;
+    server_name example.com;  # change to your domain
+
+    ssl_certificate /path/to/fullchain.pem;
+    ssl_certificate_key /path/to/privkey.pem;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/tmp/wgui.sock;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# optionally redirect HTTP to HTTPS
+server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$host$request_uri;
+}
+```
+
+Enable the config and reload Nginx similar to the previous section.
+
+### Generating a Self-Signed Certificate
+
+For local testing you can create a self-signed certificate and key. The
+following command generates a 4096 bit RSA certificate valid for one year:
+
+```bash
+sudo openssl req -x509 -newkey rsa:4096 \
+  -keyout /etc/ssl/private/wgui.key \
+  -out /etc/ssl/certs/wgui.crt \
+  -days 365 -nodes -subj "/CN=example.com"
+```
+
+Update `ssl_certificate` and `ssl_certificate_key` in `wgui-ssl.conf` (or your
+Nginx site config) to point to these files.
