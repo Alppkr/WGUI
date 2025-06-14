@@ -148,3 +148,18 @@ server {
 ```
 
 Enable the config and reload Nginx similar to the previous section.
+
+### Generating a Self-Signed Certificate
+
+For local testing you can create a self-signed certificate and key. The
+following command generates a 4096 bit RSA certificate valid for one year:
+
+```bash
+sudo openssl req -x509 -newkey rsa:4096 \
+  -keyout /etc/ssl/private/wgui.key \
+  -out /etc/ssl/certs/wgui.crt \
+  -days 365 -nodes -subj "/CN=example.com"
+```
+
+Update `ssl_certificate` and `ssl_certificate_key` in `wgui-ssl.conf` (or your
+Nginx site config) to point to these files.
