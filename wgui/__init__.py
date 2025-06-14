@@ -27,6 +27,7 @@ def create_app(config_overrides=None):
     jwt.init_app(app)
     init_celery(app)
 
+
     with app.app_context():
         if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///:memory:'):
             db.create_all()

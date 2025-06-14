@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from celery import Celery
 
 
+
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
@@ -17,6 +18,7 @@ def init_celery(app):
         result_backend=app.config.get('CELERY_RESULT_BACKEND'),
     )
     celery.flask_app = app
+
 
 
 

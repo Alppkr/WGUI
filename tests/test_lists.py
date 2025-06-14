@@ -176,3 +176,4 @@ def test_removal_notification(client, login, monkeypatch):
     with client.application.app_context():
         delete_expired_items()
     assert any('removed' in s[0].lower() for s in sent)
+
