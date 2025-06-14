@@ -21,8 +21,9 @@ python -m wgui
 celery -A wgui.tasks worker -B
 ```
 
-The Celery worker sends daily emails about list entries that are about to expire
-and notifies you when entries are removed.
+
+APScheduler runs in the background to remove expired list entries each day at midnight.
+Email notifications are sent before removal and when entries are deleted.
 
 ## Tests
 

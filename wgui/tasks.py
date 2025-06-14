@@ -1,15 +1,17 @@
 from datetime import date, timedelta
 import smtplib
 from email.message import EmailMessage
-from celery.schedules import crontab
 
-from .extensions import celery, db
+from flask import current_app
+from apscheduler.triggers.cron import CronTrigger
+
+from .extensions import db, scheduler
 from .models import DataList, EmailSettings
 
 
 def send_email(subject: str, body: str) -> None:
     """Send an email using settings stored in the database."""
-    app = celery.flask_app
+    app = current_app._get_current_object()
     with app.app_context():
         settings = EmailSettings.query.first()
         if not settings:
@@ -28,10 +30,9 @@ def send_email(subject: str, body: str) -> None:
             pass
 
 
-@celery.task
-def delete_expired_items():
+def delete_expired_items() -> None:
     """Delete expired items and notify about upcoming removals."""
-    app = celery.flask_app
+    app = current_app._get_current_object()
     with app.app_context():
         today = date.today()
 
@@ -60,11 +61,11 @@ def delete_expired_items():
             db.session.commit()
 
 
-# schedule the task daily at midnight
-celery.conf.beat_schedule = {
-    "delete-expired-items-daily": {
-        "task": "wgui.tasks.delete_expired_items",
-        "schedule": crontab(hour=0, minute=0),
-    }
-}
+def schedule_tasks(app) -> None:
+    """Register scheduled jobs."""
 
+    def run_job():
+        with app.app_context():
+            delete_expired_items()
+
+    scheduler.add_job(run_job, CronTrigger(hour=0, minute=0))

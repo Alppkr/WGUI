@@ -11,25 +11,23 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ url_for('auth.index') }}">WGUI</a>
         {% if current_user %}
-        <div class="btn-group ms-auto">
+        <div class="btn-group ms-auto gap-0">
             {% if current_claims.get('is_admin') %}
             <a class="btn btn-outline-primary" href="{{ url_for('users.list_users') }}">Users</a>
             <a class="btn btn-outline-primary" href="{{ url_for('users.email_settings') }}">Email</a>
             {% endif %}
-            <div class="btn-group" role="group">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Account
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li class="dropdown-item-text fw-bold">{{ current_user.username }}</li>
-                    <li class="dropdown-item-text">{{ current_user.email }}</li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</a></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#emailModal">Change Email</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
-                </ul>
-            </div>
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Account
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li class="dropdown-item-text fw-bold">{{ current_user.username }}</li>
+                <li class="dropdown-item-text">{{ current_user.email }}</li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#emailModal">Change Email</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+            </ul>
         </div>
         {% endif %}
     </div>
