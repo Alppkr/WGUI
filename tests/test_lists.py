@@ -92,6 +92,17 @@ def test_export_list(client):
     assert b'1.2.3.4' in resp.data
 
 
+def test_copy_button_present(client, login):
+    login()
+    client.post('/lists/add', data={'name': 'CopyList', 'list_type': 'Ip'}, follow_redirects=True)
+    from wgui.models import ListModel
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='CopyList').first()
+        list_id = lst.id
+    resp = client.get(f'/lists/{list_id}/', follow_redirects=True)
+    assert b'id="copyLink"' in resp.data
+
+
 def test_delete_expired_items_task(client, login):
     """Expired list items should be removed by the Celery task."""
     from datetime import date, timedelta
