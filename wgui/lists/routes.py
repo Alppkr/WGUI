@@ -1,10 +1,31 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    request,
+    abort,
+    Response,
+)
 from ..models import DataList, ListModel
 from ..extensions import db
+from flask_jwt_extended import verify_jwt_in_request
 from .forms import AddItemForm, DeleteForm, AddListForm
 from .models import AddItemData, AddListData
 
+
 lists_bp = Blueprint('lists', __name__, url_prefix='/lists')
+
+
+def slugify(text: str) -> str:
+    """Simple slugify function used for export URLs."""
+    return text.lower().replace(" ", "-")
+
+
+@lists_bp.app_template_filter("slugify")
+def slugify_filter(s: str) -> str:
+    return slugify(s)
 
 
 @lists_bp.app_context_processor
@@ -17,7 +38,12 @@ def inject_lists():
 
 @lists_bp.before_request
 def require_login():
-    if not session.get('logged_in'):
+    """Require authentication for all list routes except exports."""
+    if request.endpoint == 'lists.export_list':
+        return
+    try:
+        verify_jwt_in_request()
+    except Exception:
         return redirect(url_for('auth.login'))
 
 
@@ -43,7 +69,9 @@ def add_list():
 
 @lists_bp.route('/<int:list_id>/')
 def list_items(list_id: int):
-    lst = ListModel.query.get_or_404(list_id)
+    lst = db.session.get(ListModel, list_id)
+    if not lst:
+        abort(404)
     items = DataList.query.filter_by(category=lst.name).all()
     delete_form = DeleteForm()
     return render_template('list_items.html', list=lst, items=items, delete_form=delete_form)
@@ -51,7 +79,9 @@ def list_items(list_id: int):
 
 @lists_bp.route('/<int:list_id>/add', methods=['GET', 'POST'])
 def add_item(list_id: int):
-    lst = ListModel.query.get_or_404(list_id)
+    lst = db.session.get(ListModel, list_id)
+    if not lst:
+        abort(404)
     form = AddItemForm()
     if form.validate_on_submit():
         data = AddItemData(
@@ -76,7 +106,9 @@ def add_item(list_id: int):
 def delete_item(item_id: int):
     form = DeleteForm()
     if form.validate_on_submit():
-        item = DataList.query.get_or_404(item_id)
+        item = db.session.get(DataList, item_id)
+        if not item:
+            abort(404)
         category = item.category
         db.session.delete(item)
         db.session.commit()
@@ -86,3 +118,23 @@ def delete_item(item_id: int):
             return redirect(url_for('lists.list_items', list_id=lst.id))
         return redirect(url_for('auth.index'))
     return redirect(url_for('auth.index'))
+
+
+@lists_bp.route('/<list_type>/<list_name>.txt')
+def export_list(list_type: str, list_name: str):
+    """Export a list as plain text using type and name in the URL."""
+    def matches(lst: ListModel) -> bool:
+        return slugify(lst.type) == list_type and slugify(lst.name) == list_name
+
+    lst = next((l for l in ListModel.query.all() if matches(l)), None)
+    if not lst:
+        abort(404)
+    items = DataList.query.filter_by(category=lst.name).all()
+    header = f"type={slugify(lst.type)}"
+    lines = [header] + [item.data for item in items]
+    content = "\n".join(lines)
+    return Response(
+        content,
+        mimetype="text/plain",
+        headers={"Content-Disposition": f"attachment; filename={lst.name}.txt"},
+    )

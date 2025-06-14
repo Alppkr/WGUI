@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Bad Request{% endblock %}
+{% block content %}
+<h1>Bad Request</h1>
+{% if errors %}
+<ul>
+  {% for err in errors %}
+  <li>{{ err['msg'] }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>The server could not process your request.</p>
+{% endif %}
+{% endblock %}
