@@ -22,3 +22,6 @@ class Config:
     JWT_COOKIE_SAMESITE = 'Lax'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_COOKIE_CSRF_PROTECT = False
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'memory://')
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'cache+memory://')
+

@@ -90,3 +90,90 @@ def test_export_list(client):
     assert resp.headers['Content-Type'].startswith('text/plain')
     assert resp.data.startswith(b'type=ip\n')
     assert b'1.2.3.4' in resp.data
+
+
+def test_delete_expired_items_task(client, login):
+    """Expired list items should be removed by the Celery task."""
+    from datetime import date, timedelta
+    login()
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel(name='Cleanup', type='Ip')
+        db.session.add(lst)
+        db.session.flush()
+        expired = DataList(
+            category=lst.name,
+            data='1.1.1.1',
+            description='',
+            date=date.today() - timedelta(days=1),
+        )
+        db.session.add(expired)
+        db.session.commit()
+        assert DataList.query.count() == 1
+    from wgui.tasks import delete_expired_items
+    with client.application.app_context():
+        delete_expired_items()
+    with client.application.app_context():
+        assert DataList.query.count() == 0
+
+
+def test_expiration_notifications(client, login, monkeypatch):
+    """Items nearing expiration should trigger email notifications."""
+    from datetime import date, timedelta
+    login()
+    sent = []
+
+    def fake_send(subject, body):
+        sent.append((subject, body))
+
+    monkeypatch.setattr('wgui.tasks.send_email', fake_send)
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel(name='Notify', type='Ip')
+        db.session.add(lst)
+        db.session.flush()
+        item = DataList(
+            category=lst.name,
+            data='9.9.9.9',
+            description='',
+            date=date.today() + timedelta(days=3),
+        )
+        db.session.add(item)
+        db.session.commit()
+    from wgui.tasks import delete_expired_items
+    with client.application.app_context():
+        delete_expired_items()
+    assert any('3 days' in s[0] for s in sent)
+
+
+def test_removal_notification(client, login, monkeypatch):
+    """Deleting expired items should send an email with removed entries."""
+    from datetime import date, timedelta
+    login()
+    sent = []
+
+    def fake_send(subject, body):
+        sent.append((subject, body))
+
+    monkeypatch.setattr('wgui.tasks.send_email', fake_send)
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel(name='Expire', type='Ip')
+        db.session.add(lst)
+        db.session.flush()
+        item = DataList(
+            category=lst.name,
+            data='8.8.8.8',
+            description='',
+            date=date.today() - timedelta(days=1),
+        )
+        db.session.add(item)
+        db.session.commit()
+    from wgui.tasks import delete_expired_items
+    with client.application.app_context():
+        delete_expired_items()
+    assert any('removed' in s[0].lower() for s in sent)
+

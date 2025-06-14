@@ -2,7 +2,7 @@ from flask import Flask
 from .auth.routes import auth_bp
 from .admin import admin_bp
 from .lists import lists_bp
-from .extensions import db, migrate, jwt
+from .extensions import db, migrate, jwt, celery, init_celery
 from .error_handlers import register_error_handlers
 from flask_migrate import upgrade
 from .models import User, ListModel, EmailSettings
@@ -25,6 +25,8 @@ def create_app(config_overrides=None):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    init_celery(app)
+
 
     with app.app_context():
         if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///:memory:'):
@@ -59,6 +61,11 @@ def create_app(config_overrides=None):
     app.register_blueprint(lists_bp)
 
     register_error_handlers(app)
+
+    # Import tasks to ensure they are registered with Celery
+    import wgui.tasks  # noqa: F401
+
+    app.celery = celery
 
     if app.config.get('TESTING'):
         @app.route('/raise-validation-error')

@@ -18,7 +18,11 @@ flask --app wgui db upgrade
 
 ```bash
 python -m wgui
+celery -A wgui.tasks worker -B
 ```
+
+The Celery worker sends daily emails about list entries that are about to expire
+and notifies you when entries are removed.
 
 ## Tests
 
