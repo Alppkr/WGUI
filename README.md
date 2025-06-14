@@ -23,7 +23,8 @@ celery -A wgui.tasks worker -B
 
 
 APScheduler runs in the background to remove expired list entries each day at midnight.
-Email notifications are sent before removal and when entries are deleted.
+One email lists all entries expiring in the next 30 days, and another lists the entries deleted.
+Multiple recipients can be configured by separating addresses with commas in the Email Settings page.
 
 ## Tests
 

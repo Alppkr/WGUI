@@ -19,13 +19,16 @@ def send_email(subject: str, body: str) -> None:
         msg = EmailMessage()
         msg["Subject"] = subject
         msg["From"] = settings.from_email
-        msg["To"] = settings.to_email
+
+        recipients = [r.strip() for r in settings.to_email.split(',') if r.strip()]
+        msg["To"] = ", ".join(recipients)
         msg.set_content(body)
         try:
             with smtplib.SMTP(settings.smtp_server, settings.smtp_port) as smtp:
                 if settings.smtp_user or settings.smtp_pass:
                     smtp.login(settings.smtp_user, settings.smtp_pass)
-                smtp.send_message(msg)
+                smtp.send_message(msg, to_addrs=recipients)
+
         except Exception:
             pass
 
@@ -36,19 +39,22 @@ def delete_expired_items() -> None:
     with app.app_context():
         today = date.today()
 
-        # notify upcoming expirations
+        # notify upcoming expirations with a single email
+        upcoming_map: dict[int, list[DataList]] = {}
         for days in (30, 15, 7, 3, 1):
             target = today + timedelta(days=days)
-            upcoming = DataList.query.filter(DataList.date == target).all()
-            if upcoming:
-                lines = [f"{item.category}: {item.data}" for item in upcoming]
-                body = (
-                    f"The following entries will be removed in {days} days:\n" + "\n".join(lines)
-                )
-                send_email(
-                    f"Entries expiring in {days} days",
-                    body,
-                )
+            items = DataList.query.filter(DataList.date == target).all()
+            if items:
+                upcoming_map[days] = items
+
+        if upcoming_map:
+            parts: list[str] = []
+            for days, items in sorted(upcoming_map.items()):
+                lines = [f"{item.category}: {item.data}" for item in items]
+                parts.append(f"In {days} days:\n" + "\n".join(lines))
+            body = "The following entries will expire soon:\n\n" + "\n\n".join(parts)
+            send_email("Entries expiring soon", body)
+
 
         # delete expired items
         expired = DataList.query.filter(DataList.date < today).all()

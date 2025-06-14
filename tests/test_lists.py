@@ -92,6 +92,17 @@ def test_export_list(client):
     assert b'1.2.3.4' in resp.data
 
 
+def test_copy_button_present(client, login):
+    login()
+    client.post('/lists/add', data={'name': 'CopyList', 'list_type': 'Ip'}, follow_redirects=True)
+    from wgui.models import ListModel
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='CopyList').first()
+        list_id = lst.id
+    resp = client.get(f'/lists/{list_id}/', follow_redirects=True)
+    assert b'id="copyLink"' in resp.data
+
+
 def test_delete_expired_items_task(client, login):
     """Expired list items should be removed by the Celery task."""
     from datetime import date, timedelta
@@ -145,7 +156,7 @@ def test_expiration_notifications(client, login, monkeypatch):
     from wgui.tasks import delete_expired_items
     with client.application.app_context():
         delete_expired_items()
-    assert any('3 days' in s[0] for s in sent)
+    assert sent and 'expiring soon' in sent[0][0].lower()
 
 
 def test_removal_notification(client, login, monkeypatch):
@@ -176,4 +187,3 @@ def test_removal_notification(client, login, monkeypatch):
     with client.application.app_context():
         delete_expired_items()
     assert any('removed' in s[0].lower() for s in sent)
-

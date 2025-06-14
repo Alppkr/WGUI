@@ -20,7 +20,7 @@ class DeleteForm(FlaskForm):
 
 class EmailSettingsForm(FlaskForm):
     from_email = StringField('From', validators=[DataRequired(), Email()])
-    to_email = StringField('To', validators=[DataRequired(), Email()])
+    to_email = StringField('To', validators=[DataRequired()])
     smtp_server = StringField('SMTP Server', validators=[DataRequired()])
     smtp_port = StringField('SMTP Port', validators=[DataRequired()])
     smtp_user = StringField('SMTP User')
