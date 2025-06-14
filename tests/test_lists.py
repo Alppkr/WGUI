@@ -72,3 +72,47 @@ def test_plus_button_sets_type(client, login):
     assert b'/lists/add?type=Ip' in resp.data
     assert b'/lists/add?type=Ip+Range' in resp.data
     assert b'/lists/add?type=String' in resp.data
+
+
+def test_export_list(client):
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel(name='Export', type='Ip')
+        db.session.add(lst)
+        db.session.flush()
+        db.session.add(
+            DataList(category=lst.name, data='1.2.3.4', description='', date=date(2025, 6, 13))
+        )
+        db.session.commit()
+    resp = client.get('/lists/ip/export.txt')
+    assert resp.status_code == 200
+    assert resp.headers['Content-Type'].startswith('text/plain')
+    assert resp.data.startswith(b'type=ip\n')
+    assert b'1.2.3.4' in resp.data
+
+
+def test_delete_expired_items_task(client, login):
+    """Expired list items should be removed by the Celery task."""
+    from datetime import date, timedelta
+    login()
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel(name='Cleanup', type='Ip')
+        db.session.add(lst)
+        db.session.flush()
+        expired = DataList(
+            category=lst.name,
+            data='1.1.1.1',
+            description='',
+            date=date.today() - timedelta(days=1),
+        )
+        db.session.add(expired)
+        db.session.commit()
+        assert DataList.query.count() == 1
+    from wgui.tasks import delete_expired_items
+    with client.application.app_context():
+        delete_expired_items()
+    with client.application.app_context():
+        assert DataList.query.count() == 0

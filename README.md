@@ -18,6 +18,7 @@ flask --app wgui db upgrade
 
 ```bash
 python -m wgui
+celery -A wgui.tasks worker -B
 ```
 
 ## Tests
