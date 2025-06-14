@@ -1,0 +1,14 @@
+[Unit]
+Description=WGUI Gunicorn Service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/WGUI
+EnvironmentFile=/path/to/env
+ExecStart=/usr/bin/gunicorn -w 4 -b unix:/tmp/wgui.sock 'wgui:create_app()'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
