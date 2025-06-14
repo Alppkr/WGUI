@@ -19,6 +19,7 @@ def send_email(subject: str, body: str) -> None:
         msg = EmailMessage()
         msg["Subject"] = subject
         msg["From"] = settings.from_email
+
         recipients = [r.strip() for r in settings.to_email.split(',') if r.strip()]
         msg["To"] = ", ".join(recipients)
         msg.set_content(body)
@@ -27,6 +28,7 @@ def send_email(subject: str, body: str) -> None:
                 if settings.smtp_user or settings.smtp_pass:
                     smtp.login(settings.smtp_user, settings.smtp_pass)
                 smtp.send_message(msg, to_addrs=recipients)
+
         except Exception:
             pass
 
@@ -52,6 +54,7 @@ def delete_expired_items() -> None:
                 parts.append(f"In {days} days:\n" + "\n".join(lines))
             body = "The following entries will expire soon:\n\n" + "\n\n".join(parts)
             send_email("Entries expiring soon", body)
+
 
         # delete expired items
         expired = DataList.query.filter(DataList.date < today).all()

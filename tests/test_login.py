@@ -127,6 +127,7 @@ def test_email_settings_update(client, login):
         '/users/email-settings',
         data={
             'from_email': 'a@example.com',
+
             'to_email': 'b@example.com, c@example.com',
             'smtp_server': 'smtp.example.com',
             'smtp_port': '25',
