@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Email Settings{% endblock %}
+{% block content %}
+<h2>Email Settings</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.from_email.label(class="form-label") }}
+        {{ form.from_email(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.to_email.label(class="form-label") }}
+        {{ form.to_email(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.smtp_server.label(class="form-label") }}
+        {{ form.smtp_server(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.smtp_port.label(class="form-label") }}
+        {{ form.smtp_port(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.smtp_user.label(class="form-label") }}
+        {{ form.smtp_user(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.smtp_pass.label(class="form-label") }}
+        {{ form.smtp_pass(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{{ url_for('users.list_users') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

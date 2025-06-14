@@ -16,3 +16,12 @@ class AddUserForm(FlaskForm):
 class DeleteForm(FlaskForm):
     """Simple form for CSRF protection when deleting users."""
     pass
+
+
+class EmailSettingsForm(FlaskForm):
+    from_email = StringField('From', validators=[DataRequired(), Email()])
+    to_email = StringField('To', validators=[DataRequired()])
+    smtp_server = StringField('SMTP Server', validators=[DataRequired()])
+    smtp_port = StringField('SMTP Port', validators=[DataRequired()])
+    smtp_user = StringField('SMTP User')
+    smtp_pass = PasswordField('SMTP Pass')
