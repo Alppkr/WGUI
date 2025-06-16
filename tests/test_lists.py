@@ -205,3 +205,22 @@ def test_search_items(client, login):
     resp = client.get(f'/lists/{list_id}/?q=192.168.', follow_redirects=True)
     assert b'192.168.1.1' in resp.data
     assert b'10.0.0.1' not in resp.data
+
+
+def test_unique_item_per_list(client, login):
+    """Adding the same data twice should not create duplicates."""
+    login()
+    client.post('/lists/add', data={'name': 'Uniq', 'list_type': 'Ip'}, follow_redirects=True)
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='Uniq').first()
+        list_id = lst.id
+    payload = {'data': '1.2.3.4', 'description': '', 'date': '2025-06-13'}
+    resp1 = client.post(f'/lists/{list_id}/add', data=payload, follow_redirects=True)
+    assert b'Item added' in resp1.data
+    resp2 = client.post(f'/lists/{list_id}/add', data=payload, follow_redirects=True)
+    assert b'Item already exists' in resp2.data
+    with client.application.app_context():
+        items = DataList.query.filter_by(category=lst.name, data='1.2.3.4').all()
+        assert len(items) == 1

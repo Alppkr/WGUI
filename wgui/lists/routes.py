@@ -103,16 +103,20 @@ def add_item(list_id: int):
             description=form.description.data,
             date=form.date.data,
         )
-        item = DataList(
-            category=lst.name,
-            data=data.data,
-            description=data.description,
-            date=data.date,
-        )
-        db.session.add(item)
-        db.session.commit()
-        flash('Item added', 'success')
-        return redirect(url_for('lists.list_items', list_id=list_id))
+        exists = DataList.query.filter_by(category=lst.name, data=data.data).first()
+        if exists:
+            flash('Item already exists', 'danger')
+        else:
+            item = DataList(
+                category=lst.name,
+                data=data.data,
+                description=data.description,
+                date=data.date,
+            )
+            db.session.add(item)
+            db.session.commit()
+            flash('Item added', 'success')
+            return redirect(url_for('lists.list_items', list_id=list_id))
     return render_template('add_item.html', form=form, list=lst)
 
 

@@ -27,6 +27,9 @@ class DataList(db.Model):
     data = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255))
     date = db.Column(db.Date, nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint('category', 'data', name='uix_category_data'),
+    )
 
     def __repr__(self) -> str:
         return f"<DataList {self.category} {self.data}>"
