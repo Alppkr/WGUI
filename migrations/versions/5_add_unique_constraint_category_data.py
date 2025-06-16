@@ -14,11 +14,14 @@ depends_on = None
 
 
 def upgrade():
+    """Add unique constraint on (category, data) using batch mode."""
     bind = op.get_bind()
     insp = sa.inspect(bind)
     if 'data_list' in insp.get_table_names():
-        op.create_unique_constraint('uix_category_data', 'data_list', ['category', 'data'])
+        with op.batch_alter_table('data_list') as batch_op:
+            batch_op.create_unique_constraint('uix_category_data', ['category', 'data'])
 
 
 def downgrade():
-    op.drop_constraint('uix_category_data', 'data_list', type_='unique')
+    with op.batch_alter_table('data_list') as batch_op:
+        batch_op.drop_constraint('uix_category_data', type_='unique')
