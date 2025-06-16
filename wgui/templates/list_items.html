@@ -9,6 +9,13 @@
         <button type="button" class="btn btn-outline-secondary" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}">Copy</button>
     </div>
 </div>
+<form method="get" class="mb-3 d-flex" role="search">
+    <input class="form-control me-2" type="search" name="q" placeholder="Search" value="{{ search }}">
+    <button class="btn btn-outline-secondary me-2" type="submit">Search</button>
+    {% if search %}
+    <a class="btn btn-link" href="{{ url_for('lists.list_items', list_id=list.id) }}">Clear</a>
+    {% endif %}
+</form>
 <table class="table table-striped">
     <thead>
         <tr>

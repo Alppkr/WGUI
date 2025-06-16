@@ -72,9 +72,23 @@ def list_items(list_id: int):
     lst = db.session.get(ListModel, list_id)
     if not lst:
         abort(404)
+    search = request.args.get('q', '').strip()
     items = DataList.query.filter_by(category=lst.name).all()
+    if search:
+        import re
+        try:
+            regex = re.compile(search)
+            items = [i for i in items if regex.search(i.data)]
+        except re.error:
+            items = [i for i in items if search in i.data]
     delete_form = DeleteForm()
-    return render_template('list_items.html', list=lst, items=items, delete_form=delete_form)
+    return render_template(
+        'list_items.html',
+        list=lst,
+        items=items,
+        delete_form=delete_form,
+        search=search,
+    )
 
 
 @lists_bp.route('/<int:list_id>/add', methods=['GET', 'POST'])
@@ -89,16 +103,20 @@ def add_item(list_id: int):
             description=form.description.data,
             date=form.date.data,
         )
-        item = DataList(
-            category=lst.name,
-            data=data.data,
-            description=data.description,
-            date=data.date,
-        )
-        db.session.add(item)
-        db.session.commit()
-        flash('Item added', 'success')
-        return redirect(url_for('lists.list_items', list_id=list_id))
+        exists = DataList.query.filter_by(category=lst.name, data=data.data).first()
+        if exists:
+            flash('Item already exists', 'danger')
+        else:
+            item = DataList(
+                category=lst.name,
+                data=data.data,
+                description=data.description,
+                date=data.date,
+            )
+            db.session.add(item)
+            db.session.commit()
+            flash('Item added', 'success')
+            return redirect(url_for('lists.list_items', list_id=list_id))
     return render_template('add_item.html', form=form, list=lst)
 
 
