@@ -187,3 +187,21 @@ def test_removal_notification(client, login, monkeypatch):
     with client.application.app_context():
         delete_expired_items()
     assert any('removed' in s[0].lower() for s in sent)
+
+
+def test_search_items(client, login):
+    """Search should filter items using substring or regex."""
+    from datetime import date
+    login()
+    client.post('/lists/add', data={'name': 'Search', 'list_type': 'Ip'}, follow_redirects=True)
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='Search').first()
+        db.session.add(DataList(category=lst.name, data='192.168.1.1', description='', date=date(2025, 6, 13)))
+        db.session.add(DataList(category=lst.name, data='10.0.0.1', description='', date=date(2025, 6, 13)))
+        db.session.commit()
+        list_id = lst.id
+    resp = client.get(f'/lists/{list_id}/?q=192.168.', follow_redirects=True)
+    assert b'192.168.1.1' in resp.data
+    assert b'10.0.0.1' not in resp.data

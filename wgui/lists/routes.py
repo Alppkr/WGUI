@@ -72,9 +72,23 @@ def list_items(list_id: int):
     lst = db.session.get(ListModel, list_id)
     if not lst:
         abort(404)
+    search = request.args.get('q', '').strip()
     items = DataList.query.filter_by(category=lst.name).all()
+    if search:
+        import re
+        try:
+            regex = re.compile(search)
+            items = [i for i in items if regex.search(i.data)]
+        except re.error:
+            items = [i for i in items if search in i.data]
     delete_form = DeleteForm()
-    return render_template('list_items.html', list=lst, items=items, delete_form=delete_form)
+    return render_template(
+        'list_items.html',
+        list=lst,
+        items=items,
+        delete_form=delete_form,
+        search=search,
+    )
 
 
 @lists_bp.route('/<int:list_id>/add', methods=['GET', 'POST'])
