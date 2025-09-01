@@ -16,7 +16,7 @@ from flask_jwt_extended import (
     get_jwt,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
-from ..models import User
+from ..models import User, DataList, ListModel
 from ..extensions import db
 from .forms import LoginForm, ChangeEmailForm, ChangePasswordForm
 from .models import LoginData, ChangeEmailData, ChangePasswordData
@@ -51,7 +51,61 @@ def index():
         verify_jwt_in_request()
     except Exception:
         return redirect(url_for('auth.login'))
-    return render_template('home.html')
+    # Optional global search across all lists
+    q = request.args.get('q', '').strip()
+
+    # Build upcoming deletion summaries
+    from datetime import date, timedelta
+
+    today = date.today()
+    td3 = timedelta(days=3)
+    td7 = timedelta(days=7)
+    td30 = timedelta(days=30)
+
+    upcoming_top10 = (
+        DataList.query.filter(DataList.date >= today)
+        .order_by(DataList.date.asc())
+        .limit(10)
+        .all()
+    )
+    in_3_days = (
+        DataList.query.filter(DataList.date >= today, DataList.date <= today + td3)
+        .order_by(DataList.date.asc())
+        .all()
+    )
+    # Overlapping ranges: 1 week includes items in 3 days; 1 month includes all up to 30 days
+    in_1_week = (
+        DataList.query.filter(DataList.date >= today, DataList.date <= today + td7)
+        .order_by(DataList.date.asc())
+        .all()
+    )
+    in_1_month = (
+        DataList.query.filter(DataList.date >= today, DataList.date <= today + td30)
+        .order_by(DataList.date.asc())
+        .all()
+    )
+
+    # Map list name to type/id for nice labels and links
+    lists = ListModel.query.all()
+    types_by_name = {l.name: l.type for l in lists}
+    ids_by_name = {l.name: l.id for l in lists}
+
+    # Global search results (substring match)
+    search_results = []
+    if q:
+        search_results = DataList.query.filter(DataList.data.contains(q)).all()
+
+    return render_template(
+        'home.html',
+        q=q,
+        search_results=search_results,
+        upcoming_top10=upcoming_top10,
+        in_3_days=in_3_days,
+        in_1_week=in_1_week,
+        in_1_month=in_1_month,
+        types_by_name=types_by_name,
+        ids_by_name=ids_by_name,
+    )
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])

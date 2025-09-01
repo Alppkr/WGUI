@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Audit{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Audit Log</h2>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <select name="action" class="form-select">
+      <option value="">All actions</option>
+      {% for a in actions or ['list_added','list_deleted','list_edited','item_added','item_deleted','item_edited'] %}
+      <option value="{{ a }}" {% if action==a %}selected{% endif %}>{{ a|humanize_action }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <input type="text" name="list_name" class="form-control" placeholder="Target Name" value="{{ list_name or '' }}">
+  </div>
+  <div class="col-auto">
+    <input type="text" name="username" class="form-control" placeholder="Username" value="{{ username or '' }}">
+  </div>
+  <div class="col-auto">
+    <input type="text" name="entry" class="form-control" placeholder="Entry" value="{{ entry or '' }}">
+  </div>
+  <div class="col-auto">
+    <input type="date" name="start" class="form-control" value="{{ start or '' }}">
+  </div>
+  <div class="col-auto">
+    <input type="date" name="end" class="form-control" value="{{ end or '' }}">
+  </div>
+  <div class="col-auto">
+    <input type="number" min="1" max="200" name="per_page" class="form-control" placeholder="Per page" value="{{ per_page }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary" type="submit">Filter</button>
+  </div>
+</form>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Action</th>
+      <th>Target</th>
+      <th>Entry</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for row in logs %}
+    <tr>
+      <td>{{ row.created_at }}</td>
+      <td>{{ row.user.username if row.user else '-' }}</td>
+      <td>{{ row.action|humanize_action }}</td>
+      <td>
+        {% if row.list %}
+          {{ (row.list.type|lower|replace(' ', '')) ~ '.' ~ (row.list.name|lower|replace(' ', '')) }}
+        {% else %}
+          {{ row.target_type }} {{ row.target_id or '' }}
+        {% endif %}
+      </td>
+      <td>{{ row|entry_value }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center">
+  <div class="text-muted">Showing {{ start_index }}–{{ end_index }} of {{ total }}</div>
+  <div>
+    <div class="btn-group" role="group">
+      {% if has_prev %}
+      <a class="btn btn-outline-secondary" href="{{ url_for('logs.audit', page=page-1, per_page=per_page, action=action, list_name=list_name, username=username, entry=entry, start=start, end=end) }}">« Prev</a>
+      {% else %}
+      <button class="btn btn-outline-secondary" disabled>« Prev</button>
+      {% endif %}
+      <span class="btn btn-outline-secondary disabled">Page {{ page }}</span>
+      {% if has_next %}
+      <a class="btn btn-outline-secondary" href="{{ url_for('logs.audit', page=page+1, per_page=per_page, action=action, list_name=list_name, username=username, entry=entry, start=start, end=end) }}">Next »</a>
+      {% else %}
+      <button class="btn btn-outline-secondary" disabled>Next »</button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

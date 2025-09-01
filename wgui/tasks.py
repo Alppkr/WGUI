@@ -6,7 +6,7 @@ from flask import current_app
 from apscheduler.triggers.cron import CronTrigger
 
 from .extensions import db, scheduler
-from .models import DataList, EmailSettings
+from .models import DataList, EmailSettings, ScheduleSettings, AuditLog
 
 
 def send_email(subject: str, body: str) -> None:
@@ -67,11 +67,35 @@ def delete_expired_items() -> None:
             db.session.commit()
 
 
+def _job(app):
+    with app.app_context():
+        delete_expired_items()
+        # Audit: scheduled job run
+        try:
+            db.session.add(
+                AuditLog(
+                    user_id=None,
+                    action='cleanup_job_run',
+                    target_type='job',
+                    target_id=None,
+                    details='trigger=schedule',
+                )
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+
+def update_cleanup_schedule(app) -> None:
+    """(Re)register the cleanup job according to DB settings."""
+    with app.app_context():
+        settings = ScheduleSettings.query.first()
+        hour = settings.hour if settings else 0
+        minute = settings.minute if settings else 0
+    # Replace existing job with id 'cleanup_job'
+    scheduler.add_job(lambda: _job(app), CronTrigger(hour=hour, minute=minute), id='cleanup_job', replace_existing=True)
+
+
 def schedule_tasks(app) -> None:
-    """Register scheduled jobs."""
-
-    def run_job():
-        with app.app_context():
-            delete_expired_items()
-
-    scheduler.add_job(run_job, CronTrigger(hour=0, minute=0))
+    """Register scheduled jobs at startup."""
+    update_cleanup_schedule(app)

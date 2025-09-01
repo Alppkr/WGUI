@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, g
 from .auth.routes import auth_bp
 from .admin import admin_bp
 from .lists import lists_bp
+from .logs import logs_bp
 from .extensions import db, migrate, jwt, init_scheduler
 from .error_handlers import register_error_handlers
 from flask_migrate import upgrade
@@ -26,6 +27,8 @@ def create_app(config_overrides=None):
     migrate.init_app(app, db)
     jwt.init_app(app)
     init_scheduler(app)
+    # Import audit event listeners so they register with SQLAlchemy
+    from . import audit_events  # noqa: F401
 
     with app.app_context():
         if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///:memory:'):
@@ -58,12 +61,25 @@ def create_app(config_overrides=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(lists_bp)
+    app.register_blueprint(logs_bp)
 
     register_error_handlers(app)
 
     # Register scheduled cleanup task
     from .tasks import schedule_tasks
     schedule_tasks(app)
+
+    @app.before_request
+    def _capture_user_for_audit():
+        """Capture current user id from JWT (optional) for auditing."""
+        try:
+            from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+
+            verify_jwt_in_request(optional=True)
+            uid = get_jwt_identity()
+            g.user_id = int(uid) if uid else None
+        except Exception:
+            g.user_id = None
 
     if app.config.get('TESTING'):
         @app.route('/raise-validation-error')
@@ -78,4 +94,3 @@ def create_app(config_overrides=None):
             return ''  # pragma: no cover
 
     return app
-

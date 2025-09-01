@@ -1,7 +1,162 @@
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
 {% block content %}
-<div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
-    <h1>Home</h1>
+<form method="get" class="mb-3 d-flex" role="search">
+  <input class="form-control me-2" type="search" name="q" placeholder="Search all lists" value="{{ q or '' }}">
+  <button class="btn btn-outline-secondary me-2" type="submit">Search</button>
+  {% if q %}
+  <a class="btn btn-link" href="{{ url_for('auth.index') }}">Clear</a>
+  {% endif %}
+  <div class="ms-auto small text-muted align-self-center">Searches by substring across all entries</div>
+  </form>
+
+{% if q %}
+<div class="mb-4">
+  <div class="bg-white rounded-3 shadow-sm p-4">
+    <h2 class="mb-3">Search Results for "{{ q }}"</h2>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Entry</th>
+            <th>List</th>
+            <th>Date</th>
+            <th>Open</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in search_results %}
+          <tr>
+            <td>{{ item.data }}</td>
+            <td>{{ (types_by_name.get(item.category,'')|lower|replace(' ', '')) ~ '.' ~ (item.category|lower|replace(' ', '')) }}</td>
+            <td>{{ item.date }}</td>
+            <td>
+              {% set lid = ids_by_name.get(item.category) %}
+              {% if lid %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('lists.list_items', list_id=lid, q=q) }}">View</a>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="text-muted">No matches found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+<div class="mb-4">
+  <div class="bg-white rounded-3 shadow-sm p-4">
+    <h2 class="mb-3">Upcoming deletions (Top 10)</h2>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Entry</th>
+            <th>List</th>
+            <th>Expires On</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in upcoming_top10 %}
+          <tr>
+            <td>{{ item.data }}</td>
+            <td>{{ (types_by_name.get(item.category,'')|lower|replace(' ', '')) ~ '.' ~ (item.category|lower|replace(' ', '')) }}</td>
+            <td>{{ item.date }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3" class="text-muted">No upcoming entries.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="bg-white rounded-3 shadow-sm p-3 h-100">
+      <h5 class="mb-3">Will be deleted in 3 days</h5>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Entry</th>
+              <th>List</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for item in in_3_days %}
+            <tr>
+              <td>{{ item.data }}</td>
+              <td>{{ (types_by_name.get(item.category,'')|lower|replace(' ', '')) ~ '.' ~ (item.category|lower|replace(' ', '')) }}</td>
+              <td>{{ item.date }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="text-muted">No entries.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="bg-white rounded-3 shadow-sm p-3 h-100">
+      <h5 class="mb-3">Will be deleted in 1 week</h5>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Entry</th>
+              <th>List</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for item in in_1_week %}
+            <tr>
+              <td>{{ item.data }}</td>
+              <td>{{ (types_by_name.get(item.category,'')|lower|replace(' ', '')) ~ '.' ~ (item.category|lower|replace(' ', '')) }}</td>
+              <td>{{ item.date }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="text-muted">No entries.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="bg-white rounded-3 shadow-sm p-3 h-100">
+      <h5 class="mb-3">Will be deleted in 1 month</h5>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Entry</th>
+              <th>List</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for item in in_1_month %}
+            <tr>
+              <td>{{ item.data }}</td>
+              <td>{{ (types_by_name.get(item.category,'')|lower|replace(' ', '')) ~ '.' ~ (item.category|lower|replace(' ', '')) }}</td>
+              <td>{{ item.date }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="text-muted">No entries.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

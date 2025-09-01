@@ -15,6 +15,8 @@
             {% if current_claims.get('is_admin') %}
             <a class="btn btn-outline-primary" href="{{ url_for('users.list_users') }}">Users</a>
             <a class="btn btn-outline-primary" href="{{ url_for('users.email_settings') }}">Email</a>
+            <a class="btn btn-outline-primary" href="{{ url_for('users.schedule_settings') }}">Schedule</a>
+            <a class="btn btn-outline-primary" href="{{ url_for('logs.audit') }}">Audit</a>
             {% endif %}
             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Account

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Cleanup Schedule</h2>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="bg-white rounded-3 shadow-sm p-3 h-100">
+      <h5 class="mb-3">Run Time (Daily)</h5>
+      <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="row g-2 mb-3">
+          <div class="col-auto">
+            {{ form.hour.label(class="form-label") }}
+            {{ form.hour(class="form-control", min=0, max=23) }}
+          </div>
+          <div class="col-auto">
+            {{ form.minute.label(class="form-label") }}
+            {{ form.minute(class="form-control", min=0, max=59) }}
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="bg-white rounded-3 shadow-sm p-3 h-100">
+      <h5 class="mb-3">Manual Run</h5>
+      <p class="text-muted">Execute the cleanup task immediately to test scheduling and email notifications.</p>
+      <form method="post" action="{{ url_for('users.run_cleanup_now') }}">
+        {{ run_form.hidden_tag() }}
+        <button class="btn btn-outline-secondary" type="submit">Run Now</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

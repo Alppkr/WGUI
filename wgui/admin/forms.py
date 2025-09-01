@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms import StringField, PasswordField, IntegerField
+from wtforms.validators import DataRequired, InputRequired, Email, EqualTo, NumberRange
 
 
 class AddUserForm(FlaskForm):
@@ -25,3 +25,9 @@ class EmailSettingsForm(FlaskForm):
     smtp_port = StringField('SMTP Port', validators=[DataRequired()])
     smtp_user = StringField('SMTP User')
     smtp_pass = PasswordField('SMTP Pass')
+
+
+class ScheduleSettingsForm(FlaskForm):
+    # Use InputRequired so 0 is accepted; DataRequired treats 0 as missing.
+    hour = IntegerField('Hour (0-23)', validators=[InputRequired(), NumberRange(min=0, max=23)])
+    minute = IntegerField('Minute (0-59)', validators=[InputRequired(), NumberRange(min=0, max=59)])

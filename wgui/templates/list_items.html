@@ -6,7 +6,12 @@
     <div>
         <a class="btn btn-success me-2" href="{{ url_for('lists.add_item', list_id=list.id) }}">Add</a>
         <a class="btn btn-outline-secondary me-2" href="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify) }}">Download</a>
-        <button type="button" class="btn btn-outline-secondary" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}">Copy</button>
+        <a class="btn btn-outline-secondary me-2" href="{{ url_for('logs.audit', list_name=list.name) }}">Audit</a>
+        <button type="button" class="btn btn-outline-secondary me-2" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}">Copy</button>
+        <form method="post" action="{{ url_for('lists.delete_list', list_id=list.id) }}" style="display:inline-block;">
+            {{ delete_form.hidden_tag() }}
+            <button class="btn btn-danger" type="submit" onclick="return confirm('Delete this list and all its items?');">Delete List</button>
+        </form>
     </div>
 </div>
 <form method="get" class="mb-3 d-flex" role="search">
@@ -21,6 +26,7 @@
         <tr>
             <th>Data</th>
             <th>Description</th>
+            <th>Added By</th>
             <th>Date</th>
             <th>Actions</th>
         </tr>
@@ -30,6 +36,7 @@
         <tr>
             <td>{{ item.data }}</td>
             <td>{{ item.description }}</td>
+            <td>{{ item.creator.username if item.creator else '-' }}</td>
             <td>{{ item.date }}</td>
             <td>
                 <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" style="display:inline-block;">

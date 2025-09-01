@@ -17,4 +17,3 @@ def init_scheduler(app):
     app.scheduler = scheduler
 
 
-
