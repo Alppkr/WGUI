@@ -15,3 +15,13 @@ class DeleteForm(FlaskForm):
 class AddListForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     list_type = HiddenField(validators=[DataRequired()])
+
+
+class EditListForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+
+
+class EditItemForm(FlaskForm):
+    data = StringField('Data', validators=[DataRequired()])
+    description = StringField('Description')
+    date = DateField('Date', validators=[DataRequired()], format='%Y-%m-%d')

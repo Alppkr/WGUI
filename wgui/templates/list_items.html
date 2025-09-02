@@ -5,6 +5,7 @@
     <h2>{{ list.name }} List</h2>
     <div>
         <a class="btn btn-success me-2" href="{{ url_for('lists.add_item', list_id=list.id) }}">Add</a>
+        <a class="btn btn-outline-primary me-2" href="{{ url_for('lists.edit_list', list_id=list.id) }}">Edit</a>
         <a class="btn btn-outline-secondary me-2" href="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify) }}">Download</a>
         <a class="btn btn-outline-secondary me-2" href="{{ url_for('logs.audit', list_name=list.name) }}">Audit</a>
         <button type="button" class="btn btn-outline-secondary me-2" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}">Copy</button>
@@ -39,6 +40,7 @@
             <td>{{ item.creator.username if item.creator else '-' }}</td>
             <td>{{ item.date }}</td>
             <td>
+                <a class="btn btn-sm btn-outline-primary me-1" href="{{ url_for('lists.edit_item', item_id=item.id) }}">Edit</a>
                 <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" style="display:inline-block;">
                     {{ delete_form.hidden_tag() }}
                     <button class="btn btn-sm btn-danger" type="submit">Delete</button>

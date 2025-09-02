@@ -7,6 +7,7 @@ from .extensions import db, migrate, jwt, init_scheduler
 from .error_handlers import register_error_handlers
 from flask_migrate import upgrade
 from .models import User, ListModel, EmailSettings
+from werkzeug.security import generate_password_hash
 import os
 
 
@@ -44,6 +45,16 @@ def create_app(config_overrides=None):
                 first_login=True,
             )
             db.session.add(user)
+        # Ensure a system user exists for automated actions (no login)
+        if not User.query.filter_by(username='system').first():
+            sys_user = User(
+                username='system',
+                email='system@local',
+                hashed_password=generate_password_hash(os.urandom(8).hex()),
+                is_admin=True,
+                first_login=False,
+            )
+            db.session.add(sys_user)
         if not EmailSettings.query.first():
             db.session.add(
                 EmailSettings(

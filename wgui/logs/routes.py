@@ -13,9 +13,15 @@ ACTIONS = [
     'item_added', 'item_deleted', 'item_edited',
     # admin/user and settings actions
     'user_added', 'user_deleted',
-    'email_settings_updated', 'schedule_updated',
+    'email_settings_updated', 'schedule_updated', 'backup_schedule_updated', 'audit_schedule_updated', 'audit_retention_updated',
     # scheduled job actions
-    'cleanup_job_run',
+    'cleanup_job_run', 'backup_created', 'backup_settings_updated', 'audit_purge_run',
+    # auth and backup ops
+    'login_success', 'login_failed', 'logout',
+    'user_email_changed', 'user_password_changed',
+    'backup_downloaded', 'backup_restored',
+    # export
+    'list_exported',
 ]
 
 
@@ -32,7 +38,21 @@ def humanize_action(value: str) -> str:
         'user_deleted': 'user deleted',
         'email_settings_updated': 'email settings updated',
         'schedule_updated': 'schedule updated',
+        'backup_schedule_updated': 'backup schedule updated',
+        'audit_schedule_updated': 'audit purge schedule updated',
+        'audit_retention_updated': 'audit retention updated',
         'cleanup_job_run': 'cleanup job run',
+        'backup_created': 'backup created',
+        'backup_settings_updated': 'backup settings updated',
+        'audit_purge_run': 'audit logs purged',
+        'login_success': 'login success',
+        'login_failed': 'login failed',
+        'logout': 'logout',
+        'user_email_changed': 'user email changed',
+        'user_password_changed': 'user password changed',
+        'backup_downloaded': 'backup downloaded',
+        'backup_restored': 'backup restored',
+        'list_exported': 'list exported',
     }
     if not value:
         return ''

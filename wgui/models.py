@@ -55,9 +55,33 @@ class ScheduleSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hour = db.Column(db.Integer, nullable=False, default=0)
     minute = db.Column(db.Integer, nullable=False, default=0)
+    # Separate backup schedule
+    backup_hour = db.Column(db.Integer, nullable=False, default=0)
+    backup_minute = db.Column(db.Integer, nullable=False, default=0)
+    # Separate audit purge schedule
+    audit_hour = db.Column(db.Integer, nullable=False, default=0)
+    audit_minute = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self) -> str:
         return f"<ScheduleSettings {self.hour:02d}:{self.minute:02d}>"
+
+
+class AuditSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Number of days to keep audit logs
+    retention_days = db.Column(db.Integer, nullable=False, default=90)
+
+    def __repr__(self) -> str:
+        return f"<AuditSettings retention_days={self.retention_days}>"
+
+
+class BackupSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    directory = db.Column(db.String(255), nullable=False)
+    keep = db.Column(db.Integer, nullable=False, default=3)
+
+    def __repr__(self) -> str:
+        return f"<BackupSettings dir={self.directory} keep={self.keep}>"
 
 
 class AuditLog(db.Model):

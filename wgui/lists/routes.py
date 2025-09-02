@@ -11,7 +11,7 @@ from flask import (
 from ..models import DataList, ListModel, AuditLog
 from ..extensions import db
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
-from .forms import AddItemForm, DeleteForm, AddListForm
+from .forms import AddItemForm, DeleteForm, AddListForm, EditListForm, EditItemForm
 from .models import AddItemData, AddListData
 
 
@@ -83,6 +83,40 @@ def add_list():
             flash('List created', 'success')
             return redirect(url_for('lists.list_items', list_id=new_list.id))
     return render_template('add_list.html', form=form)
+
+
+@lists_bp.route('/<int:list_id>/edit', methods=['GET', 'POST'])
+def edit_list(list_id: int):
+    lst = db.session.get(ListModel, list_id)
+    if not lst:
+        abort(404)
+    form = EditListForm()
+    if form.validate_on_submit():
+        new_name = form.name.data.strip()
+        if not new_name:
+            flash('Name is required', 'danger')
+            return redirect(url_for('lists.edit_list', list_id=list_id))
+        exists = ListModel.query.filter(ListModel.name == new_name, ListModel.id != list_id).first()
+        if exists:
+            flash('Another list with this name already exists', 'danger')
+            return redirect(url_for('lists.edit_list', list_id=list_id))
+        old_name = lst.name
+        if new_name != old_name:
+            lst.name = new_name
+            # Update items category to match new list name
+            DataList.query.filter_by(category=old_name).update({DataList.category: new_name})
+            db.session.commit()
+            flash('List renamed', 'success')
+        else:
+            flash('No changes made', 'info')
+        return redirect(url_for('lists.list_items', list_id=list_id))
+    elif request.method == 'GET':
+        form.name.data = lst.name
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, 'danger')
+    return render_template('edit_list.html', form=form, list=lst)
 
 
 @lists_bp.route('/<int:list_id>/')
@@ -239,6 +273,48 @@ def delete_list(list_id: int):
     return redirect(url_for('auth.index'))
 
 
+@lists_bp.route('/edit/<int:item_id>', methods=['GET', 'POST'])
+def edit_item(item_id: int):
+    item = db.session.get(DataList, item_id)
+    if not item:
+        abort(404)
+    lst = ListModel.query.filter_by(name=item.category).first()
+    form = EditItemForm()
+    if form.validate_on_submit():
+        new_data = form.data.data.strip()
+        new_desc = form.description.data
+        new_date = form.date.data
+        if not new_data:
+            flash('Data is required', 'danger')
+            return redirect(url_for('lists.edit_item', item_id=item_id))
+        # enforce uniqueness per (category, data)
+        exists = (
+            DataList.query
+            .filter(DataList.category == item.category, DataList.data == new_data, DataList.id != item.id)
+            .first()
+        )
+        if exists:
+            flash('An entry with this value already exists in this list', 'danger')
+            return redirect(url_for('lists.edit_item', item_id=item_id))
+        item.data = new_data
+        item.description = new_desc
+        item.date = new_date
+        db.session.commit()
+        flash('Entry updated', 'success')
+        if lst:
+            return redirect(url_for('lists.list_items', list_id=lst.id))
+        return redirect(url_for('auth.index'))
+    elif request.method == 'GET':
+        form.data.data = item.data
+        form.description.data = item.description
+        form.date.data = item.date
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, 'danger')
+    return render_template('edit_item.html', form=form, list=lst, item=item)
+
+
 @lists_bp.route('/<list_type>/<list_name>.txt')
 def export_list(list_type: str, list_name: str):
     """Export a list as plain text using type and name in the URL."""
@@ -252,6 +328,27 @@ def export_list(list_type: str, list_name: str):
     header = f"type={slugify(lst.type)}"
     lines = [header] + [item.data for item in items]
     content = "\n".join(lines)
+    # Audit export (optional auth)
+    try:
+        verify_jwt_in_request(optional=True)
+        uid = get_jwt_identity()
+    except Exception:
+        uid = None
+    try:
+        from ..models import AuditLog
+        db.session.add(
+            AuditLog(
+                user_id=int(uid) if uid else None,
+                action='list_exported',
+                target_type='list',
+                target_id=lst.id,
+                list_id=lst.id,
+                details=f"name={lst.name}; type={lst.type}; ip={request.remote_addr}",
+            )
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
     return Response(
         content,
         mimetype="text/plain",

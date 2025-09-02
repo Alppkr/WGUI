@@ -16,8 +16,10 @@ from flask_jwt_extended import (
     get_jwt,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
-from ..models import User, DataList, ListModel
+from ..models import User, DataList, ListModel, AuditLog
 from ..extensions import db
+from flask import current_app
+from ..log_throttle import should_log_login_failure
 from .forms import LoginForm, ChangeEmailForm, ChangePasswordForm
 from .models import LoginData, ChangeEmailData, ChangePasswordData
 
@@ -121,8 +123,34 @@ def login():
             )
             resp = redirect(url_for('auth.index'))
             set_access_cookies(resp, access_token)
+            # Audit login success
+            try:
+                db.session.add(AuditLog(
+                    user_id=int(user.id),
+                    action='login_success',
+                    target_type='auth',
+                    target_id=None,
+                    details=f"username={user.username}; ip={request.remote_addr}",
+                ))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
             flash('Logged in successfully.', 'success')
             return resp
+        # Audit login failure (throttled to reduce noise)
+        try:
+            app = current_app._get_current_object()
+            if should_log_login_failure(app, data.username, request.remote_addr):
+                db.session.add(AuditLog(
+                    user_id=None,
+                    action='login_failed',
+                    target_type='auth',
+                    target_id=None,
+                    details=f"username={data.username}; ip={request.remote_addr}",
+                ))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
         flash('Invalid credentials', 'danger')
     return render_template('login.html', form=form)
 
@@ -131,6 +159,23 @@ def login():
 def logout():
     resp = redirect(url_for('auth.login'))
     unset_jwt_cookies(resp)
+    # Audit logout
+    try:
+        verify_jwt_in_request(optional=True)
+        uid = get_jwt_identity()
+    except Exception:
+        uid = None
+    try:
+        db.session.add(AuditLog(
+            user_id=int(uid) if uid else None,
+            action='logout',
+            target_type='auth',
+            target_id=None,
+            details=f"ip={request.remote_addr}",
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
     flash('Logged out', 'info')
     return resp
 
@@ -156,8 +201,21 @@ def update_email():
     form = ChangeEmailForm()
     if form.validate_on_submit():
         data = ChangeEmailData(email=form.email.data)
+        old_email = user.email
         user.email = data.email
         db.session.commit()
+        # Audit: user email change
+        try:
+            db.session.add(AuditLog(
+                user_id=int(user.id),
+                action='user_email_changed',
+                target_type='user',
+                target_id=user.id,
+                details=f"email:{old_email}->{user.email}",
+            ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         flash('Email updated', 'success')
     else:
         for field_errors in form.errors.values():
@@ -176,6 +234,18 @@ def update_password():
         data = ChangePasswordData(password=form.password.data)
         user.hashed_password = generate_password_hash(data.password)
         db.session.commit()
+        # Audit: password changed (no details)
+        try:
+            db.session.add(AuditLog(
+                user_id=int(user.id),
+                action='user_password_changed',
+                target_type='user',
+                target_id=user.id,
+                details=None,
+            ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         flash('Password updated', 'success')
     else:
         for field_errors in form.errors.values():

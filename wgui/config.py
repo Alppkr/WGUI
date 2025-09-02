@@ -22,3 +22,12 @@ class Config:
     JWT_COOKIE_SAMESITE = 'Lax'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_COOKIE_CSRF_PROTECT = False
+    # Audit logging throttle for login failures
+    LOGIN_FAIL_LOG_WINDOW_SECONDS = int(os.environ.get('LOGIN_FAIL_LOG_WINDOW_SECONDS', '60'))
+    LOGIN_FAIL_LOG_MAX_PER_WINDOW = int(os.environ.get('LOGIN_FAIL_LOG_MAX_PER_WINDOW', '5'))
+    # Backups
+    BACKUP_DIR = os.environ.get('BACKUP_DIR') or os.path.join(
+        os.environ.get('INSTANCE_PATH', os.path.join(os.getcwd(), 'instance')),
+        'backups',
+    )
+    BACKUP_KEEP = int(os.environ.get('BACKUP_KEEP', '3'))
