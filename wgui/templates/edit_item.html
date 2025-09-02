@@ -1,30 +1,29 @@
 {% extends 'base.html' %}
-{% block title %}Edit Entry{% endblock %}
+{% block title %}{{ _('Edit') }} {{ _('Entry') }}{% endblock %}
 {% block content %}
-<h2>Edit Entry</h2>
+<h2>{{ _('Edit') }} {{ _('Entry') }}</h2>
 {% if list %}
 <p class="text-muted mb-3">List: <strong>{{ list.name }}</strong> ({{ list.type }})</p>
 {% endif %}
 <form method="post">
   {{ form.hidden_tag() }}
   <div class="mb-3">
-    {{ form.data.label(class="form-label") }}
+    <label class="form-label">{{ _('Data') }}</label>
     {{ form.data(class="form-control") }}
   </div>
   <div class="mb-3">
-    {{ form.description.label(class="form-label") }}
+    <label class="form-label">{{ _('Description') }}</label>
     {{ form.description(class="form-control") }}
   </div>
   <div class="mb-3">
-    {{ form.date.label(class="form-label") }}
+    <label class="form-label">{{ _('Date') }}</label>
     {{ form.date(class="form-control") }}
   </div>
-  <button class="btn btn-primary" type="submit">Save</button>
+  <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
   {% if list %}
-  <a class="btn btn-secondary" href="{{ url_for('lists.list_items', list_id=list.id) }}">Cancel</a>
+  <a class="btn btn-secondary" href="{{ url_for('lists.list_items', list_id=list.id) }}">{{ _('Close') }}</a>
   {% else %}
   <a class="btn btn-secondary" href="{{ url_for('auth.index') }}">Cancel</a>
   {% endif %}
 </form>
 {% endblock %}
-

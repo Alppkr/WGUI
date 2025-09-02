@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Audit{% endblock %}
+{% block title %}{{ _('Audit') }}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h2>Audit Log</h2>
+  <h2>{{ _('Audit') }}</h2>
 </div>
 
 <form method="get" class="row g-2 mb-3">
   <div class="col-auto">
     <select name="action" class="form-select">
-      <option value="">All actions</option>
+      <option value="">{{ _('All actions') }}</option>
       {% for a in actions or ['list_added','list_deleted','list_edited','item_added','item_deleted','item_edited'] %}
       <option value="{{ a }}" {% if action==a %}selected{% endif %}>{{ a|humanize_action }}</option>
       {% endfor %}
     </select>
   </div>
   <div class="col-auto">
-    <input type="text" name="list_name" class="form-control" placeholder="Target Name" value="{{ list_name or '' }}">
+    <input type="text" name="list_name" class="form-control" placeholder="{{ _('Target Name') }}" value="{{ list_name or '' }}">
   </div>
   <div class="col-auto">
-    <input type="text" name="username" class="form-control" placeholder="Username" value="{{ username or '' }}">
+    <input type="text" name="username" class="form-control" placeholder="{{ _('Username') }}" value="{{ username or '' }}">
   </div>
   <div class="col-auto">
-    <input type="text" name="entry" class="form-control" placeholder="Entry" value="{{ entry or '' }}">
+    <input type="text" name="entry" class="form-control" placeholder="{{ _('Entry') }}" value="{{ entry or '' }}">
   </div>
   <div class="col-auto">
     <input type="date" name="start" class="form-control" value="{{ start or '' }}">
@@ -30,21 +30,21 @@
     <input type="date" name="end" class="form-control" value="{{ end or '' }}">
   </div>
   <div class="col-auto">
-    <input type="number" min="1" max="200" name="per_page" class="form-control" placeholder="Per page" value="{{ per_page }}">
+    <input type="number" min="1" max="200" name="per_page" class="form-control" placeholder="{{ _('Per page') }}" value="{{ per_page }}">
   </div>
   <div class="col-auto">
-    <button class="btn btn-outline-secondary" type="submit">Filter</button>
+    <button class="btn btn-outline-secondary" type="submit">{{ _('Filter') }}</button>
   </div>
 </form>
 
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>Time</th>
-      <th>User</th>
-      <th>Action</th>
-      <th>Target</th>
-      <th>Entry</th>
+      <th>{{ _('Time') }}</th>
+      <th>{{ _('User') }}</th>
+      <th>{{ _('Action') }}</th>
+      <th>{{ _('Target') }}</th>
+      <th>{{ _('Entry') }}</th>
     </tr>
   </thead>
   <tbody>
@@ -67,19 +67,19 @@
 </table>
 
 <div class="d-flex justify-content-between align-items-center">
-  <div class="text-muted">Showing {{ start_index }}–{{ end_index }} of {{ total }}</div>
+  <div class="text-muted">{{ _('Showing') }} {{ start_index }}–{{ end_index }} {{ _('of') }} {{ total }}</div>
   <div>
     <div class="btn-group" role="group">
       {% if has_prev %}
-      <a class="btn btn-outline-secondary" href="{{ url_for('logs.audit', page=page-1, per_page=per_page, action=action, list_name=list_name, username=username, entry=entry, start=start, end=end) }}">« Prev</a>
+      <a class="btn btn-outline-secondary" href="{{ url_for('logs.audit', page=page-1, per_page=per_page, action=action, list_name=list_name, username=username, entry=entry, start=start, end=end) }}">« {{ _('Prev') }}</a>
       {% else %}
-      <button class="btn btn-outline-secondary" disabled>« Prev</button>
+      <button class="btn btn-outline-secondary" disabled>« {{ _('Prev') }}</button>
       {% endif %}
-      <span class="btn btn-outline-secondary disabled">Page {{ page }}</span>
+      <span class="btn btn-outline-secondary disabled">{{ _('Page') }} {{ page }}</span>
       {% if has_next %}
-      <a class="btn btn-outline-secondary" href="{{ url_for('logs.audit', page=page+1, per_page=per_page, action=action, list_name=list_name, username=username, entry=entry, start=start, end=end) }}">Next »</a>
+      <a class="btn btn-outline-secondary" href="{{ url_for('logs.audit', page=page+1, per_page=per_page, action=action, list_name=list_name, username=username, entry=entry, start=start, end=end) }}">{{ _('Next') }} »</a>
       {% else %}
-      <button class="btn btn-outline-secondary" disabled>Next »</button>
+      <button class="btn btn-outline-secondary" disabled>{{ _('Next') }} »</button>
       {% endif %}
     </div>
   </div>

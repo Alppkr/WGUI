@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}Email Settings{% endblock %}
+{% block title %}{{ _('Email') }}{% endblock %}
 {% block content %}
-<h2>Email Settings</h2>
+<h2>{{ _('Email') }}</h2>
 <form method="post">
     {{ form.hidden_tag() }}
     <div class="mb-3">
@@ -11,7 +11,7 @@
     <div class="mb-3">
         {{ form.to_email.label(class="form-label") }}
         {{ form.to_email(class="form-control") }}
-        <div class="form-text">Separate multiple addresses with commas.</div>
+        <div class="form-text">{{ _('Separate multiple addresses with commas.') }}</div>
     </div>
     <div class="mb-3">
         {{ form.smtp_server.label(class="form-label") }}
@@ -29,7 +29,7 @@
         {{ form.smtp_pass.label(class="form-label") }}
         {{ form.smtp_pass(class="form-control") }}
     </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="{{ url_for('users.list_users') }}" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary">{{ _('Save') }}</button>
+    <a href="{{ url_for('users.list_users') }}" class="btn btn-secondary">{{ _('Close') }}</a>
 </form>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}Add User{% endblock %}
+{% block title %}{{ _('Users') }}{% endblock %}
 {% block content %}
-<h2>Add User</h2>
+<h2>{{ _('Users') }}</h2>
 <form method="post">
     {{ form.hidden_tag() }}
     <div class="mb-3">
@@ -20,7 +20,7 @@
         {{ form.confirm_password.label(class="form-label") }}
         {{ form.confirm_password(class="form-control") }}
     </div>
-    <button class="btn btn-primary" type="submit">Add</button>
-    <a class="btn btn-secondary" href="{{ url_for('users.list_users') }}">Cancel</a>
+    <button class="btn btn-primary" type="submit">{{ _('Add') }}</button>
+    <a class="btn btn-secondary" href="{{ url_for('users.list_users') }}">{{ _('Close') }}</a>
 </form>
 {% endblock %}

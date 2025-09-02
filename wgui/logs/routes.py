@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from ..i18n import _
 from flask_jwt_extended import verify_jwt_in_request
 from ..models import AuditLog, User, ListModel
 from sqlalchemy import or_, and_, cast, String
@@ -56,7 +57,8 @@ def humanize_action(value: str) -> str:
     }
     if not value:
         return ''
-    return mapping.get(value, value.replace('_', ' '))
+    # Return a localized, human-friendly string
+    return _(mapping.get(value, value.replace('_', ' ')))
 
 
 @logs_bp.app_template_filter('entry_value')

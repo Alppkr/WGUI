@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}Add List{% endblock %}
+{% block title %}{{ _('Add') }} {{ _('List') }}{% endblock %}
 {% block content %}
-<h2>Add List</h2>
+<h2>{{ _('Add') }} {{ _('List') }}</h2>
 <form method="post">
     {{ form.hidden_tag() }}
     <div class="mb-3">
@@ -9,8 +9,7 @@
         {{ form.name(class="form-control") }}
     </div>
     {{ form.list_type() }}
-    <button class="btn btn-primary" type="submit">Add</button>
-    <a class="btn btn-secondary" href="{{ url_for('auth.index') }}">Cancel</a>
+    <button class="btn btn-primary" type="submit">{{ _('Add') }}</button>
+    <a class="btn btn-secondary" href="{{ url_for('auth.index') }}">{{ _('Close') }}</a>
 </form>
 {% endblock %}
-

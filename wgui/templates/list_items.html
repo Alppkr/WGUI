@@ -1,35 +1,35 @@
 {% extends 'base.html' %}
-{% block title %}{{ list.name }} List{% endblock %}
+{% block title %}{{ list.name }} {{ _('List') }}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>{{ list.name }} List</h2>
+    <h2>{{ list.name }} {{ _('List') }}</h2>
     <div>
-        <a class="btn btn-success me-2" href="{{ url_for('lists.add_item', list_id=list.id) }}">Add</a>
-        <a class="btn btn-outline-primary me-2" href="{{ url_for('lists.edit_list', list_id=list.id) }}">Edit</a>
-        <a class="btn btn-outline-secondary me-2" href="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify) }}">Download</a>
-        <a class="btn btn-outline-secondary me-2" href="{{ url_for('logs.audit', list_name=list.name) }}">Audit</a>
-        <button type="button" class="btn btn-outline-secondary me-2" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}">Copy</button>
+        <a class="btn btn-success me-2" href="{{ url_for('lists.add_item', list_id=list.id) }}">{{ _('Add') }}</a>
+        <a class="btn btn-outline-primary me-2" href="{{ url_for('lists.edit_list', list_id=list.id) }}">{{ _('Edit') }}</a>
+        <a class="btn btn-outline-secondary me-2" href="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify) }}">{{ _('Download') }}</a>
+        <a class="btn btn-outline-secondary me-2" href="{{ url_for('logs.audit', list_name=list.name) }}">{{ _('Audit') }}</a>
+        <button type="button" class="btn btn-outline-secondary me-2" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}" data-copied="{{ _('Copied') }}" data-copy-label="{{ _('Copy') }}">{{ _('Copy') }}</button>
         <form method="post" action="{{ url_for('lists.delete_list', list_id=list.id) }}" style="display:inline-block;">
             {{ delete_form.hidden_tag() }}
-            <button class="btn btn-danger" type="submit" onclick="return confirm('Delete this list and all its items?');">Delete List</button>
+            <button class="btn btn-danger" type="submit" onclick="return confirm('{{ _('Delete this list and all its items?') }}');">{{ _('Delete') }} {{ _('List') }}</button>
         </form>
     </div>
 </div>
 <form method="get" class="mb-3 d-flex" role="search">
-    <input class="form-control me-2" type="search" name="q" placeholder="Search" value="{{ search }}">
-    <button class="btn btn-outline-secondary me-2" type="submit">Search</button>
+    <input class="form-control me-2" type="search" name="q" placeholder="{{ _('Search') }}" value="{{ search }}">
+    <button class="btn btn-outline-secondary me-2" type="submit">{{ _('Search') }}</button>
     {% if search %}
-    <a class="btn btn-link" href="{{ url_for('lists.list_items', list_id=list.id) }}">Clear</a>
+    <a class="btn btn-link" href="{{ url_for('lists.list_items', list_id=list.id) }}">{{ _('Clear') }}</a>
     {% endif %}
 </form>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Data</th>
-            <th>Description</th>
-            <th>Added By</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th>{{ _('Data') }}</th>
+            <th>{{ _('Description') }}</th>
+            <th>{{ _('Added By') }}</th>
+            <th>{{ _('Date') }}</th>
+            <th>{{ _('Actions') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -40,10 +40,10 @@
             <td>{{ item.creator.username if item.creator else '-' }}</td>
             <td>{{ item.date }}</td>
             <td>
-                <a class="btn btn-sm btn-outline-primary me-1" href="{{ url_for('lists.edit_item', item_id=item.id) }}">Edit</a>
+                <a class="btn btn-sm btn-outline-primary me-1" href="{{ url_for('lists.edit_item', item_id=item.id) }}">{{ _('Edit') }}</a>
                 <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" style="display:inline-block;">
                     {{ delete_form.hidden_tag() }}
-                    <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                    <button class="btn btn-sm btn-danger" type="submit">{{ _('Delete') }}</button>
                 </form>
             </td>
         </tr>
@@ -54,9 +54,9 @@
 document.getElementById('copyLink').addEventListener('click', function () {
     const url = this.dataset.url;
     navigator.clipboard.writeText(url).then(() => {
-        this.textContent = 'Copied';
+        this.textContent = this.dataset.copied || 'Copied';
         const self = this;
-        setTimeout(() => { self.textContent = 'Copy'; }, 2000);
+        setTimeout(() => { self.textContent = this.dataset.copyLabel || 'Copy'; }, 2000);
     });
 });
 </script>

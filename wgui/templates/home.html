@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Home{% endblock %}
+{% block title %}{{ _('WGUI') }}{% endblock %}
 {% block content %}
 <form method="get" class="mb-3 d-flex" role="search">
-  <input class="form-control me-2" type="search" name="q" placeholder="Search all lists" value="{{ q or '' }}">
-  <button class="btn btn-outline-secondary me-2" type="submit">Search</button>
+  <input class="form-control me-2" type="search" name="q" placeholder="{{ _('Search all lists') }}" value="{{ q or '' }}">
+  <button class="btn btn-outline-secondary me-2" type="submit">{{ _('Search') }}</button>
   {% if q %}
-  <a class="btn btn-link" href="{{ url_for('auth.index') }}">Clear</a>
+  <a class="btn btn-link" href="{{ url_for('auth.index') }}">{{ _('Clear') }}</a>
   {% endif %}
-  <div class="ms-auto small text-muted align-self-center">Searches by substring across all entries</div>
+  <div class="ms-auto small text-muted align-self-center">{{ _('Searches by substring across all entries') }}</div>
   </form>
 
 {% if q %}
 <div class="mb-4">
   <div class="bg-white rounded-3 shadow-sm p-4">
-    <h2 class="mb-3">Search Results for "{{ q }}"</h2>
+    <h2 class="mb-3">{{ _('Search Results for') }} "{{ q }}"</h2>
     <div class="table-responsive">
       <table class="table table-sm table-striped align-middle mb-0">
         <thead>
           <tr>
-            <th>Entry</th>
-            <th>List</th>
-            <th>Date</th>
-            <th>Open</th>
+            <th>{{ _('Entry') }}</th>
+            <th>{{ _('List') }}</th>
+            <th>{{ _('Date') }}</th>
+            <th>{{ _('Open') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -33,14 +33,14 @@
             <td>
               {% set lid = ids_by_name.get(item.category) %}
               {% if lid %}
-                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('lists.list_items', list_id=lid, q=q) }}">View</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('lists.list_items', list_id=lid, q=q) }}">{{ _('View') }}</a>
               {% else %}
                 <span class="text-muted">-</span>
               {% endif %}
             </td>
           </tr>
         {% else %}
-          <tr><td colspan="4" class="text-muted">No matches found.</td></tr>
+          <tr><td colspan="4" class="text-muted">{{ _('No matches found.') }}</td></tr>
         {% endfor %}
         </tbody>
       </table>
@@ -50,14 +50,14 @@
 {% endif %}
 <div class="mb-4">
   <div class="bg-white rounded-3 shadow-sm p-4">
-    <h2 class="mb-3">Upcoming deletions (Top 10)</h2>
+    <h2 class="mb-3">{{ _('Upcoming deletions (Top 10)') }}</h2>
     <div class="table-responsive">
       <table class="table table-sm table-striped align-middle mb-0">
         <thead>
           <tr>
-            <th>Entry</th>
-            <th>List</th>
-            <th>Expires On</th>
+            <th>{{ _('Entry') }}</th>
+            <th>{{ _('List') }}</th>
+            <th>{{ _('Expires On') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -68,7 +68,7 @@
             <td>{{ item.date }}</td>
           </tr>
         {% else %}
-          <tr><td colspan="3" class="text-muted">No upcoming entries.</td></tr>
+          <tr><td colspan="3" class="text-muted">{{ _('No upcoming entries.') }}</td></tr>
         {% endfor %}
         </tbody>
       </table>
@@ -79,14 +79,14 @@
 <div class="row g-3">
   <div class="col-md-4">
     <div class="bg-white rounded-3 shadow-sm p-3 h-100">
-      <h5 class="mb-3">Will be deleted in 3 days</h5>
+      <h5 class="mb-3">{{ _('Will be deleted in 3 days') }}</h5>
       <div class="table-responsive">
         <table class="table table-sm table-striped align-middle mb-0">
           <thead>
             <tr>
-              <th>Entry</th>
-              <th>List</th>
-              <th>Date</th>
+              <th>{{ _('Entry') }}</th>
+              <th>{{ _('List') }}</th>
+              <th>{{ _('Date') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -97,7 +97,7 @@
               <td>{{ item.date }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="3" class="text-muted">No entries.</td></tr>
+            <tr><td colspan="3" class="text-muted">{{ _('No entries.') }}</td></tr>
           {% endfor %}
           </tbody>
         </table>
@@ -106,14 +106,14 @@
   </div>
   <div class="col-md-4">
     <div class="bg-white rounded-3 shadow-sm p-3 h-100">
-      <h5 class="mb-3">Will be deleted in 1 week</h5>
+      <h5 class="mb-3">{{ _('Will be deleted in 1 week') }}</h5>
       <div class="table-responsive">
         <table class="table table-sm table-striped align-middle mb-0">
           <thead>
             <tr>
-              <th>Entry</th>
-              <th>List</th>
-              <th>Date</th>
+              <th>{{ _('Entry') }}</th>
+              <th>{{ _('List') }}</th>
+              <th>{{ _('Date') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -124,7 +124,7 @@
               <td>{{ item.date }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="3" class="text-muted">No entries.</td></tr>
+            <tr><td colspan="3" class="text-muted">{{ _('No entries.') }}</td></tr>
           {% endfor %}
           </tbody>
         </table>
@@ -133,14 +133,14 @@
   </div>
   <div class="col-md-4">
     <div class="bg-white rounded-3 shadow-sm p-3 h-100">
-      <h5 class="mb-3">Will be deleted in 1 month</h5>
+      <h5 class="mb-3">{{ _('Will be deleted in 1 month') }}</h5>
       <div class="table-responsive">
         <table class="table table-sm table-striped align-middle mb-0">
           <thead>
             <tr>
-              <th>Entry</th>
-              <th>List</th>
-              <th>Date</th>
+              <th>{{ _('Entry') }}</th>
+              <th>{{ _('List') }}</th>
+              <th>{{ _('Date') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -151,7 +151,7 @@
               <td>{{ item.date }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="3" class="text-muted">No entries.</td></tr>
+            <tr><td colspan="3" class="text-muted">{{ _('No entries.') }}</td></tr>
           {% endfor %}
           </tbody>
         </table>

@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
-{% block title %}Backup & Restore - WGUI{% endblock %}
+{% block title %}{{ _('Backup') }} & {{ _('Restore') }} - {{ _('WGUI') }}{% endblock %}
 {% block content %}
 <div class="container">
   <div class="row">
     <div class="col-lg-8">
-      <h2 class="mb-3">Backup & Restore</h2>
+      <h2 class="mb-3">{{ _('Backup') }} & {{ _('Restore') }}</h2>
 
       <div class="card mb-4">
         <div class="card-body">
-          <h5 class="card-title">Create Backup</h5>
-          <p class="card-text">Exports users, lists and items, email settings, schedule settings, and audit logs as a JSON file.</p>
+          <h5 class="card-title">{{ _('Create Backup') }}</h5>
+          <p class="card-text">{{ _('Exports users, lists and items, email settings, schedule settings, and audit logs as a JSON file.') }}</p>
           <form method="post" action="{{ url_for('users.backup_download') }}">
             {{ download_form.hidden_tag() }}
-            <button type="submit" class="btn btn-primary">Download Backup</button>
+            <button type="submit" class="btn btn-primary">{{ _('Download Backup') }}</button>
           </form>
         </div>
       </div>
 
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Restore Backup</h5>
-          <p class="card-text">Restores all data from a previously downloaded JSON backup. This will overwrite existing Users, Lists, Items, Email and Schedule settings, and Audits.</p>
+          <h5 class="card-title">{{ _('Restore Backup') }}</h5>
+          <p class="card-text">{{ _('Restores all data from a previously downloaded JSON backup. This will overwrite existing Users, Lists, Items, Email and Schedule settings, and Audits.') }}</p>
           <form method="post" action="{{ url_for('users.backup_restore') }}" enctype="multipart/form-data">
             {{ restore_form.hidden_tag() }}
             <div class="mb-3">
               {{ restore_form.file.label(class="form-label") }}
               {{ restore_form.file(class="form-control") }}
             </div>
-            <button type="submit" class="btn btn-danger" onclick="return confirm('This will overwrite existing data. Continue?')">Restore Backup</button>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('{{ _('This will overwrite existing data. Continue?') }}')">{{ _('Restore Backup') }}</button>
           </form>
         </div>
       </div>
@@ -35,4 +35,3 @@
   </div>
 </div>
 {% endblock %}
-

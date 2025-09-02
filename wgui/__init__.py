@@ -1,4 +1,4 @@
-from flask import Flask, g
+from flask import Flask, g, request, redirect, url_for, make_response
 from .auth.routes import auth_bp
 from .admin import admin_bp
 from .lists import lists_bp
@@ -9,6 +9,7 @@ from flask_migrate import upgrade
 from .models import User, ListModel, EmailSettings
 from werkzeug.security import generate_password_hash
 import os
+from .i18n import _, SUPPORTED_LANGS
 
 
 def create_app(config_overrides=None):
@@ -75,10 +76,20 @@ def create_app(config_overrides=None):
     app.register_blueprint(logs_bp)
 
     register_error_handlers(app)
+    _inject_i18n(app)
 
     # Register scheduled cleanup task
     from .tasks import schedule_tasks
     schedule_tasks(app)
+
+    @app.route('/lang/<code>')
+    def set_language(code: str):
+        from flask import current_app
+        resp = redirect(request.referrer or url_for('auth.index'))
+        if code not in SUPPORTED_LANGS:
+            code = 'en'
+        resp.set_cookie('lang', code, samesite='Lax')
+        return resp
 
     @app.before_request
     def _capture_user_for_audit():
@@ -105,3 +116,30 @@ def create_app(config_overrides=None):
             return ''  # pragma: no cover
 
     return app
+
+
+def _select_locale_from_request():
+    lang = request.cookies.get('lang') or request.args.get('lang')
+    if lang and lang in SUPPORTED_LANGS:
+        g.locale = lang
+    else:
+        g.locale = 'en'
+
+
+def _inject_i18n(app: Flask):
+    @app.before_request
+    def _set_locale():
+        _select_locale_from_request()
+
+    # Expose gettext to templates
+    app.jinja_env.globals['_'] = _
+    app.jinja_env.globals['current_locale'] = lambda: getattr(g, 'locale', 'en')
+
+
+# Initialize i18n on import
+_app_for_i18n = None
+try:
+    # This block is safe to call from create_app as well
+    pass
+except Exception:
+    pass

@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
-{% block title %}Login{% endblock %}
+{% block title %}{{ _('Login') }}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
     <form method="post" class="p-4 bg-white rounded shadow-sm">
         {{ form.hidden_tag() }}
         <div class="mb-3">
-            {{ form.username.label(class="form-label") }}
+            <label class="form-label">{{ _('Username') }}</label>
             {{ form.username(class="form-control form-control-sm", style="max-width: 260px;") }}
         </div>
         <div class="mb-3">
-            {{ form.password.label(class="form-label") }}
+            <label class="form-label">{{ _('Password') }}</label>
             {{ form.password(class="form-control form-control-sm", style="max-width: 260px;") }}
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-primary">{{ _('Login') }}</button>
     </form>
 </div>
 {% endblock %}
