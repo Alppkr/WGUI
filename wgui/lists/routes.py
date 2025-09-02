@@ -72,6 +72,7 @@ def add_list():
             db.session.add(
                 AuditLog(
                     user_id=int(uid) if uid else None,
+                    actor_name=(db.session.get(User, int(uid)).username if uid else None),
                     action='list_added',
                     target_type='list',
                     target_id=new_list.id,
@@ -186,6 +187,7 @@ def add_item(list_id: int):
             db.session.add(
                 AuditLog(
                     user_id=int(user_id) if user_id else None,
+                    actor_name=(db.session.get(User, int(user_id)).username if user_id else None),
                     action='item_added',
                     target_type='item',
                     target_id=item.id,
@@ -218,6 +220,7 @@ def delete_item(item_id: int):
         db.session.add(
             AuditLog(
                 user_id=int(uid) if uid else None,
+                actor_name=(db.session.get(User, int(uid)).username if uid else None),
                 action='item_deleted',
                 target_type='item',
                 target_id=item.id,
@@ -254,6 +257,7 @@ def delete_list(list_id: int):
         db.session.add(
             AuditLog(
                 user_id=int(uid) if uid else None,
+                actor_name=(db.session.get(User, int(uid)).username if uid else None),
                 action='list_deleted',
                 target_type='list',
                 target_id=lst.id,
@@ -339,6 +343,7 @@ def export_list(list_type: str, list_name: str):
         db.session.add(
             AuditLog(
                 user_id=int(uid) if uid else None,
+                actor_name=(db.session.get(User, int(uid)).username if uid else None),
                 action='list_exported',
                 target_type='list',
                 target_id=lst.id,

@@ -2,7 +2,7 @@ from flask import g
 from sqlalchemy import event
 from sqlalchemy.orm.attributes import get_history
 from .extensions import db
-from .models import AuditLog, DataList, ListModel
+from .models import AuditLog, DataList, ListModel, User
 
 
 @event.listens_for(db.session, 'before_flush')
@@ -16,6 +16,21 @@ def audit_edits(session, flush_context, instances):
         user_id = int(getattr(g, 'user_id', None)) if getattr(g, 'user_id', None) else None
     except Exception:
         user_id = None
+
+    # Populate actor_name for new AuditLog rows if missing
+    for obj in list(session.new):
+        if isinstance(obj, AuditLog) and not getattr(obj, 'actor_name', None):
+            try:
+                # Prefer explicit user_id on the log; else fallback to g.user_id
+                uid = getattr(obj, 'user_id', None) or (int(getattr(g, 'user_id', None)) if getattr(g, 'user_id', None) else None)
+                if uid:
+                    u = session.get(User, int(uid))
+                    obj.actor_name = u.username if u else obj.actor_name
+                else:
+                    # System or anonymous
+                    obj.actor_name = obj.actor_name or 'system'
+            except Exception:
+                pass
 
     for obj in session.dirty.copy():
         # Skip if the row is being deleted
@@ -67,4 +82,3 @@ def audit_edits(session, flush_context, instances):
                             details='; '.join(changes)[:255],
                         )
                     )
-

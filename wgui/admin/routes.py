@@ -84,7 +84,7 @@ def add_user():
             username=data.username,
             email=data.email,
             hashed_password=generate_password_hash(data.password),
-            is_admin=False,
+            is_admin=bool(form.is_admin.data),
             first_login=True,
         )
         db.session.add(user)
@@ -103,7 +103,7 @@ def add_user():
                 action='user_added',
                 target_type='user',
                 target_id=user.id,
-                details=f"username={user.username}; email={user.email}",
+                details=f"username={user.username}; email={user.email}; is_admin={user.is_admin}",
             )
         )
         db.session.commit()
@@ -146,6 +146,106 @@ def delete_user(user_id: int):
             db.session.delete(user)
             db.session.commit()
             flash('User deleted', 'info')
+    return redirect(url_for('users.list_users'))
+
+
+@admin_bp.route('/make-admin/<int:user_id>', methods=['POST'])
+def make_admin(user_id: int):
+    """Promote a user to admin."""
+    form = DeleteForm()
+    if not form.validate_on_submit():
+        return redirect(url_for('users.list_users'))
+    user = db.session.get(User, user_id)
+    if not user:
+        abort(404)
+    if user.is_admin:
+        flash('User is already an admin', 'info')
+        return redirect(url_for('users.list_users'))
+    user.is_admin = True
+    # Audit: user promoted
+    try:
+        verify_jwt_in_request()
+        from flask_jwt_extended import get_jwt_identity
+
+        uid = get_jwt_identity()
+    except Exception:
+        uid = None
+    db.session.add(
+        AuditLog(
+            user_id=int(uid) if uid else None,
+            action='user_promoted',
+            target_type='user',
+            target_id=user.id,
+            details=f"username={user.username}; email={user.email}",
+        )
+    )
+    db.session.commit()
+    flash('User promoted to admin', 'success')
+    return redirect(url_for('users.list_users'))
+
+
+@admin_bp.route('/revoke-admin/<int:user_id>', methods=['POST'])
+def revoke_admin(user_id: int):
+    """Revoke admin rights from a user with safeguards.
+
+    - Cannot revoke from non-existing or non-admin users.
+    - Cannot revoke from 'system' user.
+    - Cannot revoke if this would leave no human admins (excluding 'system').
+    """
+    form = DeleteForm()
+    if not form.validate_on_submit():
+        return redirect(url_for('users.list_users'))
+    user = db.session.get(User, user_id)
+    if not user:
+        abort(404)
+    if not user.is_admin:
+        flash('User is not an admin', 'info')
+        return redirect(url_for('users.list_users'))
+    if user.username == 'system':
+        flash('Cannot revoke admin from system user', 'danger')
+        return redirect(url_for('users.list_users'))
+    # Prevent revoking from primary admin user defined in config
+    try:
+        primary_admin = current_app.config.get('USERNAME')
+        if primary_admin and user.username == primary_admin:
+            flash('Cannot revoke admin from primary admin user', 'danger')
+            return redirect(url_for('users.list_users'))
+    except Exception:
+        pass
+
+    # Prevent self-demotion (current user cannot revoke their own admin)
+    try:
+        verify_jwt_in_request()
+        from flask_jwt_extended import get_jwt_identity
+
+        acting_uid = get_jwt_identity()
+    except Exception:
+        acting_uid = None
+    if acting_uid and int(acting_uid) == int(user.id):
+        flash('You cannot revoke your own admin privileges', 'danger')
+        return redirect(url_for('users.list_users'))
+
+    # Count current human admins (exclude 'system')
+    human_admins = User.query.filter(User.is_admin.is_(True), User.username != 'system').count()
+    if human_admins <= 1:
+        flash('Cannot revoke admin: at least one admin is required', 'danger')
+        return redirect(url_for('users.list_users'))
+
+    user.is_admin = False
+    # Audit: user demoted
+    # Acting user id for audit (may be None)
+    uid = acting_uid if acting_uid is not None else None
+    db.session.add(
+        AuditLog(
+            user_id=int(uid) if uid else None,
+            action='user_demoted',
+            target_type='user',
+            target_id=user.id,
+            details=f"username={user.username}; email={user.email}",
+        )
+    )
+    db.session.commit()
+    flash('Admin rights revoked', 'success')
     return redirect(url_for('users.list_users'))
 
 
@@ -596,6 +696,7 @@ class BackupAudit(BaseModel):
     id: int
     created_at: datetime
     user_id: Optional[int] = None
+    actor_name: Optional[str] = None
     action: str
     target_type: str
     target_id: Optional[int] = None
@@ -793,6 +894,7 @@ def backup_restore():
                     id=a.id,
                     created_at=a.created_at,
                     user_id=a.user_id,
+                    actor_name=a.actor_name,
                     action=a.action,
                     target_type=a.target_type,
                     target_id=a.target_id,

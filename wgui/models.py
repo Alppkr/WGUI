@@ -89,6 +89,8 @@ class AuditLog(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, server_default=func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', lazy='joined')
+    # Snapshot of actor's username at log time to preserve display after deletion
+    actor_name = db.Column(db.String(120))
     action = db.Column(db.String(50), nullable=False)
     target_type = db.Column(db.String(20), nullable=False)  # 'list' or 'item'
     target_id = db.Column(db.Integer)

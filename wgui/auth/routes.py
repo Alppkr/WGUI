@@ -127,6 +127,7 @@ def login():
             try:
                 db.session.add(AuditLog(
                     user_id=int(user.id),
+                    actor_name=user.username,
                     action='login_success',
                     target_type='auth',
                     target_id=None,
@@ -143,6 +144,7 @@ def login():
             if should_log_login_failure(app, data.username, request.remote_addr):
                 db.session.add(AuditLog(
                     user_id=None,
+                    actor_name=data.username,
                     action='login_failed',
                     target_type='auth',
                     target_id=None,
@@ -168,6 +170,7 @@ def logout():
     try:
         db.session.add(AuditLog(
             user_id=int(uid) if uid else None,
+            actor_name=(db.session.get(User, int(uid)).username if uid else None),
             action='logout',
             target_type='auth',
             target_id=None,
@@ -202,12 +205,14 @@ def update_email():
     if form.validate_on_submit():
         data = ChangeEmailData(email=form.email.data)
         old_email = user.email
+        old_email = user.email
         user.email = data.email
         db.session.commit()
         # Audit: user email change
         try:
             db.session.add(AuditLog(
                 user_id=int(user.id),
+                actor_name=user.username,
                 action='user_email_changed',
                 target_type='user',
                 target_id=user.id,
@@ -238,6 +243,7 @@ def update_password():
         try:
             db.session.add(AuditLog(
                 user_id=int(user.id),
+                actor_name=user.username,
                 action='user_password_changed',
                 target_type='user',
                 target_id=user.id,

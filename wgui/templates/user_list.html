@@ -20,12 +20,22 @@
             <td>{{ user.email }}</td>
             <td>
                 {% if not user.is_admin %}
-                <form method="post" action="{{ url_for('users.delete_user', user_id=user.id) }}" style="display:inline-block;">
+                <form method="post" action="{{ url_for('users.make_admin', user_id=user.id) }}" style="display:inline-block;">
+                    {{ delete_form.hidden_tag() }}
+                    <button class="btn btn-sm btn-outline-primary" type="submit">{{ _('Make Admin') }}</button>
+                </form>
+                <form method="post" action="{{ url_for('users.delete_user', user_id=user.id) }}" style="display:inline-block;" class="ms-1">
                     {{ delete_form.hidden_tag() }}
                     <button class="btn btn-sm btn-danger" type="submit">{{ _('Delete') }}</button>
                 </form>
                 {% else %}
                 <span class="text-muted">Admin</span>
+                {% if user.username != 'system' and (not current_user or current_user.id != user.id) %}
+                <form method="post" action="{{ url_for('users.revoke_admin', user_id=user.id) }}" style="display:inline-block;" class="ms-1">
+                    {{ delete_form.hidden_tag() }}
+                    <button class="btn btn-sm btn-outline-secondary" type="submit">{{ _('Revoke Admin') }}</button>
+                </form>
+                {% endif %}
                 {% endif %}
             </td>
         </tr>

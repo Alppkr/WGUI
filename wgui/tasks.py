@@ -65,9 +65,14 @@ def delete_expired_items(initiator_user_id: int | None = None) -> None:
             send_email("Entries removed", body)
             # Resolve user attribution: use initiator if provided, else system user
             user_id_for_audit = initiator_user_id
+            actor_name = None
             if user_id_for_audit is None:
                 sys_user = User.query.filter_by(username='system').first()
                 user_id_for_audit = sys_user.id if sys_user else None
+                actor_name = 'system'
+            else:
+                u = db.session.get(User, int(user_id_for_audit))
+                actor_name = u.username if u else None
             # Preload list ids by name to avoid repeated queries
             lists = {l.name: l.id for l in ListModel.query.all()}
             # Log and delete each expired item
@@ -76,6 +81,7 @@ def delete_expired_items(initiator_user_id: int | None = None) -> None:
                 db.session.add(
                     AuditLog(
                         user_id=user_id_for_audit,
+                        actor_name=actor_name,
                         action='item_deleted',
                         target_type='item',
                         target_id=item.id,
@@ -95,6 +101,7 @@ def _job(app):
             db.session.add(
                 AuditLog(
                     user_id=None,
+                    actor_name='system',
                     action='cleanup_job_run',
                     target_type='job',
                     target_id=None,
@@ -130,6 +137,7 @@ def run_backup_task(app) -> None:
             db.session.add(
                 AuditLog(
                     user_id=None,
+                    actor_name='system',
                     action='backup_created',
                     target_type='backup',
                     target_id=None,
@@ -157,6 +165,7 @@ def run_audit_purge_task(app) -> None:
             db.session.add(
                 AuditLog(
                     user_id=None,
+                    actor_name='system',
                     action='audit_purge_run',
                     target_type='audit',
                     target_id=None,

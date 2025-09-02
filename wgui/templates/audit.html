@@ -51,15 +51,9 @@
   {% for row in logs %}
     <tr>
       <td>{{ row.created_at }}</td>
-      <td>{{ row.user.username if row.user else '-' }}</td>
+      <td>{{ row.user.username if row.user else (row.actor_name or '-') }}</td>
       <td>{{ row.action|humanize_action }}</td>
-      <td>
-        {% if row.list %}
-          {{ (row.list.type|lower|replace(' ', '')) ~ '.' ~ (row.list.name|lower|replace(' ', '')) }}
-        {% else %}
-          {{ row.target_type }} {{ row.target_id or '' }}
-        {% endif %}
-      </td>
+      <td>{{ row|target_display }}</td>
       <td>{{ row|entry_value }}</td>
     </tr>
   {% endfor %}

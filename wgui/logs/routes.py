@@ -23,6 +23,9 @@ ACTIONS = [
     'backup_downloaded', 'backup_restored',
     # export
     'list_exported',
+    # user role changes
+    'user_promoted',
+    'user_demoted',
 ]
 
 
@@ -54,6 +57,8 @@ def humanize_action(value: str) -> str:
         'backup_downloaded': 'backup downloaded',
         'backup_restored': 'backup restored',
         'list_exported': 'list exported',
+        'user_promoted': 'user promoted to admin',
+        'user_demoted': 'user demoted from admin',
     }
     if not value:
         return ''
@@ -89,12 +94,40 @@ def entry_value(row) -> str:
             if getattr(row, 'list', None) and getattr(row.list, 'name', None):
                 return row.list.name
             return extract(details, 'name')
+        if action in ('user_added', 'user_deleted', 'user_promoted', 'user_demoted'):
+            return extract(details, 'username')
         return ''
     except Exception:
         return ''
 
 # Backward-compat alias in case templates still use removed_entry
 removed_entry = entry_value
+
+
+@logs_bp.app_template_filter('target_display')
+def target_display(row) -> str:
+    """Human-readable target label. For user targets, show the username.
+    Falls back to list label or default type/id.
+    """
+    try:
+        # For user targets, show real username from details snapshot
+        if getattr(row, 'target_type', '') == 'user':
+            details = getattr(row, 'details', '') or ''
+            token = 'username='
+            if token in details:
+                frag = details.split(token, 1)[1]
+                name = frag.split(';', 1)[0].strip()
+                if name:
+                    return f"user {name}"
+        # For list targets, prefer joined list type.name
+        if getattr(row, 'list', None) and getattr(row.list, 'name', None):
+            return f"{row.list.type.lower().replace(' ', '')}.{row.list.name.lower().replace(' ', '')}"
+        # Default
+        t = (getattr(row, 'target_type', '') or '').strip()
+        i = getattr(row, 'target_id', None)
+        return f"{t} {i}".strip()
+    except Exception:
+        return ''
 
 
 @logs_bp.before_request

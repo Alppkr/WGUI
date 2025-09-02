@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, IntegerField
+from wtforms import StringField, PasswordField, IntegerField, BooleanField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms.validators import DataRequired, InputRequired, Email, EqualTo, NumberRange
 
@@ -12,6 +12,7 @@ class AddUserForm(FlaskForm):
         'Confirm Password',
         validators=[DataRequired(), EqualTo('password', message='Passwords must match')],
     )
+    is_admin = BooleanField('Make Admin')
 
 
 class DeleteForm(FlaskForm):

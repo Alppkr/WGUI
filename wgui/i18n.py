@@ -31,6 +31,8 @@ _STRINGS = {
         "Data": "Veri",
         "Description": "Açıklama",
         "Added By": "Ekleyen",
+        "Make Admin": "Yönetici Yap",
+        "Revoke Admin": "Yöneticiliği Kaldır",
         "Search": "Ara",
         "Clear": "Temizle",
         "Cleanup Schedule (Daily)": "Temizlik Zamanlaması (Günlük)",
@@ -132,6 +134,8 @@ _STRINGS = {
         "backup downloaded": "yedek indirildi",
         "backup restored": "yedek geri yüklendi",
         "list exported": "liste dışa aktarıldı",
+        "user promoted to admin": "kullanıcı yönetici yapıldı",
+        "user demoted from admin": "kullanıcının yöneticiliği kaldırıldı",
     },
 }
 

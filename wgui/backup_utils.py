@@ -83,6 +83,7 @@ def build_backup_payload(app) -> dict:
                 'id': a.id,
                 'created_at': a.created_at.isoformat() if hasattr(a.created_at, 'isoformat') else str(a.created_at),
                 'user_id': a.user_id,
+                'actor_name': a.actor_name,
                 'action': a.action,
                 'target_type': a.target_type,
                 'target_id': a.target_id,

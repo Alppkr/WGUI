@@ -20,6 +20,10 @@
         {{ form.confirm_password.label(class="form-label") }}
         {{ form.confirm_password(class="form-control") }}
     </div>
+    <div class="form-check mb-3">
+        {{ form.is_admin(class="form-check-input", id="isAdminCheck") }}
+        <label class="form-check-label" for="isAdminCheck">{{ _('Make Admin') }}</label>
+    </div>
     <button class="btn btn-primary" type="submit">{{ _('Add') }}</button>
     <a class="btn btn-secondary" href="{{ url_for('users.list_users') }}">{{ _('Close') }}</a>
 </form>
