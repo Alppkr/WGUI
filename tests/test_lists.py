@@ -52,6 +52,39 @@ def test_add_list(client, login):
     assert b'My List' in resp.data
 
 
+def test_edit_list_records_actor(client, login):
+    login()
+    client.post('/lists/add', data={'name': 'Original', 'list_type': 'Ip'}, follow_redirects=True)
+    from wgui.models import ListModel, DataList, AuditLog
+    from wgui.extensions import db
+    from datetime import date
+
+    with client.application.app_context():
+        lst = ListModel.query.filter_by(name='Original').first()
+        db.session.add(
+            DataList(category=lst.name, data='9.9.9.9', description='', date=date(2025, 6, 13))
+        )
+        db.session.commit()
+        list_id = lst.id
+
+    resp = client.post(
+        f'/lists/{list_id}/edit',
+        data={'name': 'Renamed'},
+        follow_redirects=True,
+    )
+    assert b'List renamed' in resp.data
+
+    with client.application.app_context():
+        lst = db.session.get(ListModel, list_id)
+        assert lst.name == 'Renamed'
+        # Ensure related items moved to the new category
+        categories = {row.category for row in DataList.query.all()}
+        assert categories == {'Renamed'}
+        logs = AuditLog.query.filter_by(action='list_edited', list_id=list_id).all()
+        assert logs
+        assert all(log.actor_name == 'admin' for log in logs)
+
+
 def test_lists_grouped_by_type(client, login):
     login()
     client.post('/lists/add', data={'name': 'IP Test', 'list_type': 'Ip'}, follow_redirects=True)

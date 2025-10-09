@@ -2,7 +2,7 @@
 {% block title %}{{ _('Edit') }} {{ _('List') }}{% endblock %}
 {% block content %}
 <h2>{{ _('Edit') }} {{ _('List') }}</h2>
-<form method="post">
+<form method="post" action="{{ url_for('lists.edit_list', list_id=list.id) }}">
     {{ form.hidden_tag() }}
     <div class="mb-3">
         <label class="form-label">{{ _('Name') }}</label>
@@ -10,4 +10,5 @@
     </div>
     <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
     <a class="btn btn-secondary" href="{{ url_for('lists.list_items', list_id=list.id) }}">{{ _('Close') }}</a>
+</form>
 {% endblock %}

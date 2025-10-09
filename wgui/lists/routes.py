@@ -8,7 +8,7 @@ from flask import (
     abort,
     Response,
 )
-from ..models import DataList, ListModel, AuditLog
+from ..models import DataList, ListModel, AuditLog, User
 from ..extensions import db
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from .forms import AddItemForm, DeleteForm, AddListForm, EditListForm, EditItemForm
@@ -69,10 +69,11 @@ def add_list():
                 uid = get_jwt_identity()
             except Exception:
                 uid = None
+            actor = db.session.get(User, int(uid)) if uid else None
             db.session.add(
                 AuditLog(
                     user_id=int(uid) if uid else None,
-                    actor_name=(db.session.get(User, int(uid)).username if uid else None),
+                    actor_name=actor.username if actor else None,
                     action='list_added',
                     target_type='list',
                     target_id=new_list.id,
@@ -175,6 +176,7 @@ def add_item(list_id: int):
                 user_id = get_jwt_identity()
             except Exception:
                 user_id = None
+            actor = db.session.get(User, int(user_id)) if user_id else None
             item = DataList(
                 category=lst.name,
                 data=data.data,
@@ -187,7 +189,7 @@ def add_item(list_id: int):
             db.session.add(
                 AuditLog(
                     user_id=int(user_id) if user_id else None,
-                    actor_name=(db.session.get(User, int(user_id)).username if user_id else None),
+                    actor_name=actor.username if actor else None,
                     action='item_added',
                     target_type='item',
                     target_id=item.id,
@@ -217,21 +219,23 @@ def delete_item(item_id: int):
             uid = get_jwt_identity()
         except Exception:
             uid = None
+        actor = db.session.get(User, int(uid)) if uid else None
+        list_obj = ListModel.query.filter_by(name=category).first()
         db.session.add(
             AuditLog(
                 user_id=int(uid) if uid else None,
-                actor_name=(db.session.get(User, int(uid)).username if uid else None),
+                actor_name=actor.username if actor else None,
                 action='item_deleted',
                 target_type='item',
                 target_id=item.id,
-                list_id=ListModel.query.filter_by(name=category).first().id if ListModel.query.filter_by(name=category).first() else None,
+                list_id=list_obj.id if list_obj else None,
                 details=f"category={category}; data={item.data}",
             )
         )
         db.session.delete(item)
         db.session.commit()
         flash('Item deleted', 'info')
-        lst = ListModel.query.filter_by(name=category).first()
+        lst = list_obj
         if lst:
             return redirect(url_for('lists.list_items', list_id=lst.id))
         return redirect(url_for('auth.index'))
@@ -254,10 +258,11 @@ def delete_list(list_id: int):
             uid = get_jwt_identity()
         except Exception:
             uid = None
+        actor = db.session.get(User, int(uid)) if uid else None
         db.session.add(
             AuditLog(
                 user_id=int(uid) if uid else None,
-                actor_name=(db.session.get(User, int(uid)).username if uid else None),
+                actor_name=actor.username if actor else None,
                 action='list_deleted',
                 target_type='list',
                 target_id=lst.id,
@@ -340,10 +345,11 @@ def export_list(list_type: str, list_name: str):
         uid = None
     try:
         from ..models import AuditLog
+        actor = db.session.get(User, int(uid)) if uid else None
         db.session.add(
             AuditLog(
                 user_id=int(uid) if uid else None,
-                actor_name=(db.session.get(User, int(uid)).username if uid else None),
+                actor_name=actor.username if actor else None,
                 action='list_exported',
                 target_type='list',
                 target_id=lst.id,
