@@ -93,7 +93,7 @@ def create_app(config_overrides=None):
 
     @app.before_request
     def _capture_user_for_audit():
-        """Capture current user id from JWT (optional) for auditing."""
+        """Capture current user details from JWT (optional) for auditing."""
         try:
             from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 
@@ -102,6 +102,18 @@ def create_app(config_overrides=None):
             g.user_id = int(uid) if uid else None
         except Exception:
             g.user_id = None
+
+        # Resolve the actor once per request so audit hooks can reuse it
+        if getattr(g, 'user_id', None):
+            try:
+                g.actor = db.session.get(User, int(g.user_id))
+                g.actor_name = g.actor.username if g.actor else None
+            except Exception:
+                g.actor = None
+                g.actor_name = None
+        else:
+            g.actor = None
+            g.actor_name = None
 
     if app.config.get('TESTING'):
         @app.route('/raise-validation-error')

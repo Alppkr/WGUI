@@ -16,21 +16,31 @@ def audit_edits(session, flush_context, instances):
         user_id = int(getattr(g, 'user_id', None)) if getattr(g, 'user_id', None) else None
     except Exception:
         user_id = None
+    actor_name = getattr(g, 'actor_name', None)
+    if actor_name is None and user_id is None:
+        actor_name = 'system'
 
     # Populate actor_name for new AuditLog rows if missing
+    actor_hint = getattr(g, 'actor_name', None)
     for obj in list(session.new):
         if isinstance(obj, AuditLog) and not getattr(obj, 'actor_name', None):
+            name = actor_hint
             try:
                 # Prefer explicit user_id on the log; else fallback to g.user_id
-                uid = getattr(obj, 'user_id', None) or (int(getattr(g, 'user_id', None)) if getattr(g, 'user_id', None) else None)
-                if uid:
-                    u = session.get(User, int(uid))
-                    obj.actor_name = u.username if u else obj.actor_name
-                else:
-                    # System or anonymous
-                    obj.actor_name = obj.actor_name or 'system'
+                uid = getattr(obj, 'user_id', None) or (
+                    int(getattr(g, 'user_id', None)) if getattr(g, 'user_id', None) else None
+                )
+                if not name and uid:
+                    user = session.get(User, int(uid))
+                    name = user.username if user else None
             except Exception:
-                pass
+                name = None
+
+            if not name:
+                # System or anonymous
+                name = 'system'
+
+            obj.actor_name = name
 
     for obj in session.dirty.copy():
         # Skip if the row is being deleted
@@ -55,6 +65,7 @@ def audit_edits(session, flush_context, instances):
                     session.add(
                         AuditLog(
                             user_id=user_id,
+                            actor_name=actor_name,
                             action='item_edited',
                             target_type='item',
                             target_id=obj.id,
@@ -75,6 +86,7 @@ def audit_edits(session, flush_context, instances):
                     session.add(
                         AuditLog(
                             user_id=user_id,
+                            actor_name=actor_name,
                             action='list_edited',
                             target_type='list',
                             target_id=obj.id,
