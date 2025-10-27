@@ -1,3 +1,5 @@
+import json
+
 from flask import (
     Blueprint,
     render_template,
@@ -335,7 +337,13 @@ def export_list(list_type: str, list_name: str):
         abort(404)
     items = DataList.query.filter_by(category=lst.name).all()
     header = f"type={lst.type.lower().replace(' ', '')}"
-    lines = [header] + [item.data for item in items]
+
+    def format_line(item: DataList) -> str:
+        data = json.dumps(item.data)
+        description = json.dumps(item.description or "")
+        return f"{data} {description}"
+
+    lines = [header] + [format_line(item) for item in items]
     content = "\n".join(lines)
     # Audit export (optional auth)
     try:
