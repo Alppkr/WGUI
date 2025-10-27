@@ -43,7 +43,7 @@
                 <a class="btn btn-sm btn-outline-primary me-1" href="{{ url_for('lists.edit_item', item_id=item.id) }}">{{ _('Edit') }}</a>
                 <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" style="display:inline-block;">
                     {{ delete_form.hidden_tag() }}
-                    <button class="btn btn-sm btn-danger" type="submit">{{ _('Delete') }}</button>
+                    <button class="btn btn-sm btn-danger" type="submit" onclick="return confirm('{{ _('Delete this item?') }}');">{{ _('Delete') }}</button>
                 </form>
             </td>
         </tr>
