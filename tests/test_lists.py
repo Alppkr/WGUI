@@ -125,6 +125,28 @@ def test_export_list(client):
     assert b'1.2.3.4' in resp.data
 
 
+def test_export_ip_range_list(client):
+    from wgui.models import ListModel, DataList
+    from wgui.extensions import db
+    with client.application.app_context():
+        lst = ListModel(name='Range Export', type='Ip Range')
+        db.session.add(lst)
+        db.session.flush()
+        db.session.add(
+            DataList(
+                category=lst.name,
+                data='10.0.0.0/24',
+                description='',
+                date=date(2025, 6, 13),
+            )
+        )
+        db.session.commit()
+    resp = client.get('/lists/ip-range/range-export.txt')
+    assert resp.status_code == 200
+    assert resp.data.startswith(b'type=iprange\n')
+    assert b'10.0.0.0/24' in resp.data
+
+
 def test_copy_button_present(client, login):
     login()
     client.post('/lists/add', data={'name': 'CopyList', 'list_type': 'Ip'}, follow_redirects=True)
