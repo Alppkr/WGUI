@@ -53,6 +53,7 @@
                         type="button"
                         data-confirm-message="{{ _('Delete this item?') }}"
                         data-confirm-label="{{ _('Delete') }}"
+                        data-confirm-details="{{ _('Item to delete: %(item)s') % {'item': item.data} }}"
                     >{{ _('Delete') }}</button>
                 </form>
             </td>
@@ -68,7 +69,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
             </div>
             <div class="modal-body text-center">
-                <p id="confirmDeleteMessage" class="mb-0"></p>
+                <p id="confirmDeleteMessage" class="mb-1"></p>
+                <p id="confirmDeleteDetails" class="fw-semibold mb-0 d-none"></p>
             </div>
             <div class="modal-footer justify-content-center">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
@@ -101,6 +103,8 @@ window.addEventListener('load', function () {
 
     const confirmMessage = confirmModalElement.querySelector('#confirmDeleteMessage');
     const confirmButton = confirmModalElement.querySelector('#confirmDeleteButton');
+    const confirmDetails = confirmModalElement.querySelector('#confirmDeleteDetails');
+    const defaultConfirmLabel = confirmButton.textContent;
     const modalInstance = new bootstrap.Modal(confirmModalElement);
     let formPendingDeletion = null;
 
@@ -114,7 +118,15 @@ window.addEventListener('load', function () {
 
             formPendingDeletion = form;
             confirmMessage.textContent = this.dataset.confirmMessage || '';
-            confirmButton.textContent = this.dataset.confirmLabel || confirmButton.textContent;
+
+            const confirmLabel = this.dataset.confirmLabel || defaultConfirmLabel;
+            confirmButton.textContent = confirmLabel;
+
+            if (confirmDetails) {
+                const details = this.dataset.confirmDetails || '';
+                confirmDetails.textContent = details;
+                confirmDetails.classList.toggle('d-none', !details);
+            }
             modalInstance.show();
         });
     });
@@ -124,6 +136,18 @@ window.addEventListener('load', function () {
             formPendingDeletion.submit();
             formPendingDeletion = null;
             modalInstance.hide();
+
+        }
+    });
+
+    confirmModalElement.addEventListener('hidden.bs.modal', function () {
+        formPendingDeletion = null;
+        confirmMessage.textContent = '';
+        confirmButton.textContent = defaultConfirmLabel;
+
+        if (confirmDetails) {
+            confirmDetails.textContent = '';
+            confirmDetails.classList.add('d-none');
         }
     });
 });
