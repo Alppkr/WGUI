@@ -59,10 +59,8 @@ def delete_expired_items(initiator_user_id: int | None = None) -> None:
 
         # delete expired items
         expired = DataList.query.filter(DataList.date < today).all()
+        removed_items: list[tuple[str, str]] = []
         if expired:
-            lines = [f"{item.category}: {item.data}" for item in expired]
-            body = "The following entries were removed:\n" + "\n".join(lines)
-            send_email("Entries removed", body)
             # Resolve user attribution: use initiator if provided, else system user
             user_id_for_audit = initiator_user_id
             actor_name = None
@@ -77,20 +75,28 @@ def delete_expired_items(initiator_user_id: int | None = None) -> None:
             lists = {l.name: l.id for l in ListModel.query.all()}
             # Log and delete each expired item
             for item in expired:
-                list_id = lists.get(item.category)
+                current = db.session.get(DataList, item.id)
+                if current is None:
+                    continue
+                list_id = lists.get(current.category)
+                removed_items.append((current.category, current.data))
                 db.session.add(
                     AuditLog(
                         user_id=user_id_for_audit,
                         actor_name=actor_name,
                         action='item_deleted',
                         target_type='item',
-                        target_id=item.id,
+                        target_id=current.id,
                         list_id=list_id,
-                        details=f"category={item.category}; data={item.data}; reason=expired",
+                        details=f"category={current.category}; data={current.data}; reason=expired",
                     )
                 )
-                db.session.delete(item)
-            db.session.commit()
+                db.session.delete(current)
+            if removed_items:
+                lines = [f"{category}: {data}" for category, data in removed_items]
+                body = "The following entries were removed:\n" + "\n".join(lines)
+                send_email("Entries removed", body)
+                db.session.commit()
 
 
 def _job(app):
