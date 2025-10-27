@@ -9,9 +9,14 @@
         <a class="btn btn-outline-secondary me-2" href="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify) }}">{{ _('Download') }}</a>
         <a class="btn btn-outline-secondary me-2" href="{{ url_for('logs.audit', list_name=list.name) }}">{{ _('Audit') }}</a>
         <button type="button" class="btn btn-outline-secondary me-2" id="copyLink" data-url="{{ url_for('lists.export_list', list_type=list.type|slugify, list_name=list.name|slugify, _external=True) }}" data-copied="{{ _('Copied') }}" data-copy-label="{{ _('Copy') }}">{{ _('Copy') }}</button>
-        <form method="post" action="{{ url_for('lists.delete_list', list_id=list.id) }}" style="display:inline-block;">
+        <form method="post" action="{{ url_for('lists.delete_list', list_id=list.id) }}" class="d-inline-block">
             {{ delete_form.hidden_tag() }}
-            <button class="btn btn-danger" type="submit" onclick="return confirm('{{ _('Delete this list and all its items?') }}');">{{ _('Delete') }} {{ _('List') }}</button>
+            <button
+                class="btn btn-danger delete-action"
+                type="button"
+                data-confirm-message="{{ _('Delete this list and all its items?') }}"
+                data-confirm-label="{{ _('Delete List') }}"
+            >{{ _('Delete') }} {{ _('List') }}</button>
         </form>
     </div>
 </div>
@@ -41,22 +46,85 @@
             <td>{{ item.date }}</td>
             <td>
                 <a class="btn btn-sm btn-outline-primary me-1" href="{{ url_for('lists.edit_item', item_id=item.id) }}">{{ _('Edit') }}</a>
-                <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" style="display:inline-block;">
+                <form method="post" action="{{ url_for('lists.delete_item', item_id=item.id) }}" class="d-inline-block">
                     {{ delete_form.hidden_tag() }}
-                    <button class="btn btn-sm btn-danger" type="submit" onclick="return confirm('{{ _('Delete this item?') }}');">{{ _('Delete') }}</button>
+                    <button
+                        class="btn btn-sm btn-danger delete-action"
+                        type="button"
+                        data-confirm-message="{{ _('Delete this item?') }}"
+                        data-confirm-label="{{ _('Delete') }}"
+                    >{{ _('Delete') }}</button>
                 </form>
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Confirm Deletion') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p id="confirmDeleteMessage" class="mb-0"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">{{ _('Delete') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-document.getElementById('copyLink').addEventListener('click', function () {
-    const url = this.dataset.url;
-    navigator.clipboard.writeText(url).then(() => {
-        this.textContent = this.dataset.copied || 'Copied';
-        const self = this;
-        setTimeout(() => { self.textContent = this.dataset.copyLabel || 'Copy'; }, 2000);
+window.addEventListener('load', function () {
+    const copyButton = document.getElementById('copyLink');
+    if (copyButton) {
+        copyButton.addEventListener('click', function () {
+            const url = this.dataset.url;
+            navigator.clipboard.writeText(url).then(() => {
+                const copiedLabel = this.dataset.copied || 'Copied';
+                const copyLabel = this.dataset.copyLabel || 'Copy';
+                this.textContent = copiedLabel;
+                const button = this;
+                setTimeout(() => { button.textContent = copyLabel; }, 2000);
+            });
+        });
+    }
+
+    const confirmModalElement = document.getElementById('confirmDeleteModal');
+    if (!confirmModalElement || typeof bootstrap === 'undefined') {
+        return;
+    }
+
+    const confirmMessage = confirmModalElement.querySelector('#confirmDeleteMessage');
+    const confirmButton = confirmModalElement.querySelector('#confirmDeleteButton');
+    const modalInstance = new bootstrap.Modal(confirmModalElement);
+    let formPendingDeletion = null;
+
+    document.querySelectorAll('.delete-action').forEach((button) => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const form = this.closest('form');
+            if (!form) {
+                return;
+            }
+
+            formPendingDeletion = form;
+            confirmMessage.textContent = this.dataset.confirmMessage || '';
+            confirmButton.textContent = this.dataset.confirmLabel || confirmButton.textContent;
+            modalInstance.show();
+        });
+    });
+
+    confirmButton.addEventListener('click', function () {
+        if (formPendingDeletion) {
+            formPendingDeletion.submit();
+            formPendingDeletion = null;
+            modalInstance.hide();
+        }
     });
 });
 </script>
