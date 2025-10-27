@@ -334,7 +334,7 @@ def export_list(list_type: str, list_name: str):
     if not lst:
         abort(404)
     items = DataList.query.filter_by(category=lst.name).all()
-    header = f"type={slugify(lst.type)}"
+    header = f"type={lst.type.lower().replace(' ', '')}"
     lines = [header] + [item.data for item in items]
     content = "\n".join(lines)
     # Audit export (optional auth)
