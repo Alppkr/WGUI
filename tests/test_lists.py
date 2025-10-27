@@ -115,14 +115,19 @@ def test_export_list(client):
         db.session.add(lst)
         db.session.flush()
         db.session.add(
-            DataList(category=lst.name, data='1.2.3.4', description='', date=date(2025, 6, 13))
+            DataList(
+                category=lst.name,
+                data='1.2.3.4',
+                description='ticket 12345',
+                date=date(2025, 6, 13),
+            )
         )
         db.session.commit()
     resp = client.get('/lists/ip/export.txt')
     assert resp.status_code == 200
     assert resp.headers['Content-Type'].startswith('text/plain')
     assert resp.data.startswith(b'type=ip\n')
-    assert b'1.2.3.4' in resp.data
+    assert b'"1.2.3.4" "ticket 12345"' in resp.data
 
 
 def test_export_ip_range_list(client):
@@ -136,7 +141,7 @@ def test_export_ip_range_list(client):
             DataList(
                 category=lst.name,
                 data='10.0.0.0/24',
-                description='',
+                description='ticket 23456',
                 date=date(2025, 6, 13),
             )
         )
@@ -144,7 +149,7 @@ def test_export_ip_range_list(client):
     resp = client.get('/lists/ip-range/range-export.txt')
     assert resp.status_code == 200
     assert resp.data.startswith(b'type=iprange\n')
-    assert b'10.0.0.0/24' in resp.data
+    assert b'"10.0.0.0/24" "ticket 23456"' in resp.data
 
 
 def test_copy_button_present(client, login):
