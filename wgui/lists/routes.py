@@ -339,8 +339,8 @@ def export_list(list_type: str, list_name: str):
     header = f"type={lst.type.lower().replace(' ', '')}"
 
     def format_line(item: DataList) -> str:
-        data = json.dumps(item.data)
-        description = json.dumps(item.description or "")
+        data = json.dumps(item.data, ensure_ascii=False)
+        description = json.dumps(item.description or "", ensure_ascii=False)
         return f"{data} {description}"
 
     lines = [header] + [format_line(item) for item in items]
